@@ -9,38 +9,42 @@ export class Board {
   grid: BoardGrid
   width: number
   height: number
+  container: HTMLCanvasElement
+  ctx: CanvasRenderingContext2D
+  tileSize: number // in px
   
-  constructor(width = 10, height = 22) {
+  constructor(container: HTMLCanvasElement, width = 10, height = 22) {
     this.width = width
     this.height = height
+    this.container = container
+    this.ctx = this.container.getContext('2d') as CanvasRenderingContext2D
 
+    this.tileSize = 32
+    this.container.width = (this.width * this.tileSize)
+    this.container.height = (this.height * this.tileSize)
     this.grid = this.initGrid()
   }
 
   public draw() {
-    const oldgame = document.getElementById("game")
-    if (oldgame) document.body.removeChild(oldgame)
-    const container = document.createElement('div')
-    container.id = "game"
-    addClass(container, "container")
-
-    for (let r = 0; r < this.grid.length; r++) {
+    for (let r = 0; r < this.height; r++) {
       let row = this.grid[r]
-      let rowEl = document.createElement('div')
-      addClass(rowEl, "row")
+      
+      for (let c = 0; c < this.width; c++) {
+        let cell = row[c]
 
-      for (let ix of row) {
-        const cell = document.createElement('div')
-        const minoName = ix > 0 ? TetrominoType[ix].toLowerCase() : ""
-
-        addClass(cell, `cell ${ix > 0 ? "tetromino" : ""} ${minoName}`)
-        rowEl.appendChild(cell)
+        this.ctx.fillStyle = cell > 0 ? "red" : "white"
+        this.drawMino(c, r)
       }
-
-      container.appendChild(rowEl)
+      
     }
+  }
 
-    document.body.appendChild(container)
+  private drawMino(x: number, y: number) {
+    this.ctx.fillRect(x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize)
+    const ss = this.ctx.strokeStyle
+    this.ctx.strokeStyle = "#222222"
+    this.ctx.strokeRect(x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize)
+    this.ctx.strokeStyle = ss
   }
 
   public insertShape(shape: TetrominoType, rotation: number = 0) {

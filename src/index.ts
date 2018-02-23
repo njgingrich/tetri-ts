@@ -5,9 +5,11 @@ class Tetris {
   board: Board
   step: number
   lastTime: number
+  container: HTMLCanvasElement
 
-  constructor() {
-    this.board = new Board()
+  constructor(container: HTMLCanvasElement) {
+    this.container = container
+    this.board = new Board(this.container)
     this.step = 1
     this.lastTime = 0
   }
@@ -34,5 +36,6 @@ class Tetris {
   }
 }
 
-const game = new Tetris()
+const container = document.getElementById("game") as HTMLCanvasElement
+const game = new Tetris(container)
 game.start()
