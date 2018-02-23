@@ -69,7 +69,42 @@ require = (function (modules, cache, entry) {
 
   // Override the current require with this new one
   return newRequire;
-})({10:[function(require,module,exports) {
+})({21:[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+function addClass(node, classes) {
+    if (node.className) {
+        node.className += " " + classes;
+    }
+    else {
+        node.className = classes;
+    }
+}
+exports.addClass = addClass;
+function drawSquare(x, y, ctx, size) {
+    ctx.fillRect(x * size, y * size, size, size);
+    var ss = ctx.strokeStyle;
+    ctx.strokeStyle = "#222222";
+    ctx.strokeRect(x * size, y * size, size, size);
+    ctx.strokeStyle = ss;
+}
+exports.drawSquare = drawSquare;
+
+},{}],19:[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var Colors;
+(function (Colors) {
+    Colors[Colors["red"] = 1] = "red";
+    Colors[Colors["blue"] = 2] = "blue";
+    Colors[Colors["green"] = 3] = "green";
+    Colors[Colors["brown"] = 4] = "brown";
+    Colors[Colors["purple"] = 5] = "purple";
+    Colors[Colors["aqua"] = 6] = "aqua";
+    Colors[Colors["orange"] = 7] = "orange";
+})(Colors = exports.Colors || (exports.Colors = {}));
+
+},{}],10:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Tetromino = /** @class */ (function () {
@@ -99,213 +134,165 @@ var TetrominoType;
 exports.Shapes = (_a = {},
     _a[TetrominoType.SQUARE] = [
         [
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 1, 1, 0],
-            [0, 0, 1, 1, 0],
-            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 1, 1, 0],
+            [0, 1, 1, 0],
+            [0, 0, 0, 0],
         ],
         [
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 1, 1, 0],
-            [0, 0, 1, 1, 0],
-            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 1, 1, 0],
+            [0, 1, 1, 0],
+            [0, 0, 0, 0],
         ],
         [
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 1, 1, 0],
-            [0, 0, 1, 1, 0],
-            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 1, 1, 0],
+            [0, 1, 1, 0],
+            [0, 0, 0, 0],
         ],
         [
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 1, 1, 0],
-            [0, 0, 1, 1, 0],
-            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 1, 1, 0],
+            [0, 1, 1, 0],
+            [0, 0, 0, 0],
         ],
     ],
     _a[TetrominoType.LINE] = [
         [
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 1, 1, 1, 1],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [2, 2, 2, 2],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
         ],
         [
-            [0, 0, 0, 0, 0],
-            [0, 0, 1, 0, 0],
-            [0, 0, 1, 0, 0],
-            [0, 0, 1, 0, 0],
-            [0, 0, 1, 0, 0],
+            [0, 0, 2, 0],
+            [0, 0, 2, 0],
+            [0, 0, 2, 0],
+            [0, 0, 2, 0],
         ],
         [
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [1, 1, 1, 1, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [2, 2, 2, 2],
+            [0, 0, 0, 0],
         ],
         [
-            [0, 0, 1, 0, 0],
-            [0, 0, 1, 0, 0],
-            [0, 0, 1, 0, 0],
-            [0, 0, 1, 0, 0],
-            [0, 0, 0, 0, 0],
-        ],
+            [0, 2, 0, 0],
+            [0, 2, 0, 0],
+            [0, 2, 0, 0],
+            [0, 2, 0, 0],
+        ]
     ],
     _a[TetrominoType.L] = [
         [
-            [0, 0, 0, 0, 0],
-            [0, 0, 1, 0, 0],
-            [0, 0, 1, 0, 0],
-            [0, 0, 1, 1, 0],
-            [0, 0, 0, 0, 0],
+            [0, 0, 3],
+            [3, 3, 3],
+            [0, 0, 0]
         ],
         [
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 1, 1, 1, 0],
-            [0, 1, 0, 0, 0],
-            [0, 0, 0, 0, 0],
+            [0, 3, 0],
+            [0, 3, 0],
+            [0, 3, 3]
         ],
         [
-            [0, 0, 0, 0, 0],
-            [0, 1, 1, 0, 0],
-            [0, 0, 1, 0, 0],
-            [0, 0, 1, 0, 0],
-            [0, 0, 0, 0, 0],
+            [0, 0, 0],
+            [3, 3, 3],
+            [3, 0, 0]
         ],
         [
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 1, 0],
-            [0, 1, 1, 1, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-        ],
+            [3, 3, 0],
+            [0, 3, 0],
+            [0, 3, 0]
+        ]
     ],
     _a[TetrominoType.J] = [
         [
-            [0, 0, 0, 0, 0],
-            [0, 0, 1, 0, 0],
-            [0, 0, 1, 0, 0],
-            [0, 1, 1, 0, 0],
-            [0, 0, 0, 0, 0],
+            [4, 0, 0],
+            [4, 4, 4],
+            [0, 0, 0]
         ],
         [
-            [0, 0, 0, 0, 0],
-            [0, 1, 0, 0, 0],
-            [0, 1, 1, 1, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
+            [0, 4, 4],
+            [0, 4, 0],
+            [0, 4, 0]
         ],
         [
-            [0, 0, 0, 0, 0],
-            [0, 0, 1, 1, 0],
-            [0, 0, 1, 0, 0],
-            [0, 0, 1, 0, 0],
-            [0, 0, 0, 0, 0],
+            [0, 0, 0],
+            [4, 4, 4],
+            [0, 0, 4]
         ],
         [
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 1, 1, 1, 0],
-            [0, 0, 0, 1, 0],
-            [0, 0, 0, 0, 0],
-        ],
+            [0, 4, 0],
+            [0, 4, 0],
+            [4, 4, 0]
+        ]
     ],
     _a[TetrominoType.S] = [
         [
-            [0, 0, 0, 0, 0],
-            [0, 0, 1, 0, 0],
-            [0, 0, 1, 1, 0],
-            [0, 0, 0, 1, 0],
-            [0, 0, 0, 0, 0],
+            [0, 5, 5],
+            [5, 5, 0],
+            [0, 0, 0]
         ],
         [
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 1, 1, 0],
-            [0, 1, 1, 0, 0],
-            [0, 0, 0, 0, 0],
+            [0, 5, 0],
+            [0, 5, 5],
+            [0, 0, 5]
         ],
         [
-            [0, 0, 0, 0, 0],
-            [0, 1, 0, 0, 0],
-            [0, 1, 1, 0, 0],
-            [0, 0, 1, 0, 0],
-            [0, 0, 0, 0, 0],
+            [0, 0, 0],
+            [0, 5, 5],
+            [5, 5, 0]
         ],
         [
-            [0, 0, 0, 0, 0],
-            [0, 0, 1, 1, 0],
-            [0, 1, 1, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-        ],
+            [5, 0, 0],
+            [5, 5, 0],
+            [0, 5, 0]
+        ]
     ],
     _a[TetrominoType.Z] = [
         [
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 1, 0],
-            [0, 0, 1, 1, 0],
-            [0, 0, 1, 0, 0],
-            [0, 0, 0, 0, 0],
+            [6, 6, 0],
+            [0, 6, 6],
+            [0, 0, 0]
         ],
         [
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 1, 1, 0, 0],
-            [0, 0, 1, 1, 0],
-            [0, 0, 0, 0, 0],
+            [0, 0, 6],
+            [0, 6, 6],
+            [0, 6, 0]
         ],
         [
-            [0, 0, 0, 0, 0],
-            [0, 0, 1, 0, 0],
-            [0, 1, 1, 0, 0],
-            [0, 1, 0, 0, 0],
-            [0, 0, 0, 0, 0],
+            [0, 0, 0],
+            [6, 6, 0],
+            [0, 6, 6]
         ],
         [
-            [0, 0, 0, 0, 0],
-            [0, 1, 1, 0, 0],
-            [0, 0, 1, 1, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-        ],
+            [0, 6, 0],
+            [6, 6, 0],
+            [6, 0, 0]
+        ]
     ],
     _a[TetrominoType.T] = [
         [
-            [0, 0, 0, 0, 0],
-            [0, 0, 1, 0, 0],
-            [0, 0, 1, 1, 0],
-            [0, 0, 1, 0, 0],
-            [0, 0, 0, 0, 0],
+            [0, 7, 0],
+            [7, 7, 7],
+            [0, 0, 0]
         ],
         [
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 1, 1, 1, 0],
-            [0, 0, 1, 0, 0],
-            [0, 0, 0, 0, 0],
+            [0, 7, 0],
+            [0, 7, 7],
+            [0, 7, 0]
         ],
         [
-            [0, 0, 0, 0, 0],
-            [0, 0, 1, 0, 0],
-            [0, 1, 1, 0, 0],
-            [0, 0, 1, 0, 0],
-            [0, 0, 0, 0, 0],
+            [0, 0, 0],
+            [7, 7, 7],
+            [0, 7, 0]
         ],
         [
-            [0, 0, 0, 0, 0],
-            [0, 0, 1, 0, 0],
-            [0, 1, 1, 1, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-        ],
+            [0, 7, 0],
+            [7, 7, 0],
+            [0, 7, 0]
+        ]
     ],
     _a);
 /**
@@ -323,14 +310,75 @@ exports.Offset = (_b = {},
     _b);
 var _a, _b;
 
-},{}],8:[function(require,module,exports) {
+},{}],22:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var shape_1 = require("./shape");
+var color_1 = require("./color");
+var util_1 = require("../util");
+var Piece = /** @class */ (function () {
+    function Piece(type, boardWidth, ctx, size) {
+        this.type = type;
+        this.color = color_1.Colors[this.type];
+        this.rotation = 0;
+        this.shape = shape_1.Shapes[this.type][this.rotation];
+        this.row = -2; // y
+        this.col = (boardWidth / 2) - Math.ceil(this.shape.length / 2); // x
+        this.ctx = ctx;
+        this.size = size;
+    }
+    Piece.prototype.draw = function () {
+        this.fill(color_1.Colors[this.type]);
+    };
+    Piece.prototype.clear = function () {
+        this.fill("white");
+    };
+    Piece.prototype.fill = function (fillstyle) {
+        for (var r = 0; r < this.shape.length; r++) {
+            for (var c = 0; c < this.shape.length; c++) {
+                var cell = this.shape[c][r];
+                if (cell > 0) {
+                    this.ctx.fillStyle = fillstyle;
+                    util_1.drawSquare(this.col + c, this.row + r, this.ctx, this.size);
+                }
+            }
+        }
+    };
+    Piece.prototype.left = function () {
+        this.clear();
+        this.col--;
+        this.draw();
+    };
+    Piece.prototype.right = function () {
+        this.clear();
+        this.col++;
+        this.draw();
+    };
+    Piece.prototype.down = function () {
+        this.clear();
+        this.row++;
+        this.draw();
+    };
+    Piece.prototype.rotate = function () {
+        this.clear();
+        this.rotation = (this.rotation + 1) % 4;
+        this.shape = shape_1.Shapes[this.type][this.rotation];
+        this.draw();
+    };
+    return Piece;
+}());
+exports.Piece = Piece;
+
+},{"./shape":10,"./color":19,"../util":21}],8:[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var util_1 = require("../util");
+var color_1 = require("./color");
+var piece_1 = require("./piece");
 var Board = /** @class */ (function () {
     function Board(container, width, height) {
         if (width === void 0) { width = 10; }
-        if (height === void 0) { height = 22; }
+        if (height === void 0) { height = 20; }
         this.width = width;
         this.height = height;
         this.container = container;
@@ -345,34 +393,21 @@ var Board = /** @class */ (function () {
             var row = this.grid[r];
             for (var c = 0; c < this.width; c++) {
                 var cell = row[c];
-                this.ctx.fillStyle = cell > 0 ? "red" : "white";
-                this.drawMino(c, r);
+                this.ctx.fillStyle = cell > 0 ? color_1.Colors[cell] : "white";
+                util_1.drawSquare(c, r, this.ctx, this.tileSize);
             }
         }
     };
-    Board.prototype.drawMino = function (x, y) {
-        this.ctx.fillRect(x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize);
-        var ss = this.ctx.strokeStyle;
-        this.ctx.strokeStyle = "#222222";
-        this.ctx.strokeRect(x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize);
-        this.ctx.strokeStyle = ss;
+    Board.prototype.setActivePiece = function (shape) {
+        this.activePiece = new piece_1.Piece(shape, this.width, this.ctx, this.tileSize);
     };
-    Board.prototype.insertShape = function (shape, rotation) {
-        if (rotation === void 0) { rotation = 0; }
-        var hOffset = ((this.width / 2) - 2);
-        var t = shape_1.Shapes[shape][rotation];
-        var offset = shape_1.Offset[shape][rotation];
-        for (var row = 0; row < 5; row++) {
-            for (var i = 0; i < 5; i++) {
-                var offsetRow = row + offset[1];
-                var offsetCell = i + offset[0];
-                if (offsetRow < 5 && offsetCell < 5) {
-                    this.grid[row][i + hOffset] = t[offsetRow][offsetCell];
-                }
-            }
-        }
+    Board.prototype.drawPiece = function () {
+        // const hOffset = ((this.width / 2) - 2)
+        // const t = Shapes[shape][rotation]
+        // const offset = Offset[shape][rotation]
+        this.activePiece.draw();
     };
-    Board.prototype.shiftDown = function () {
+    Board.prototype.shiftBoardDown = function () {
         var bottomRow = this.grid[this.grid.length - 1].filter(function (el) { return el !== 0; });
         var shouldNotShift = bottomRow.length > 0;
         if (shouldNotShift) {
@@ -400,7 +435,7 @@ var Board = /** @class */ (function () {
 }());
 exports.Board = Board;
 
-},{"./shape":10}],4:[function(require,module,exports) {
+},{"../util":21,"./color":19,"./piece":22}],4:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var board_1 = require("./model/board");
@@ -411,10 +446,12 @@ var Tetris = /** @class */ (function () {
         this.board = new board_1.Board(this.container);
         this.step = 1;
         this.lastTime = 0;
+        this.newPiece = true;
     }
     Tetris.prototype.start = function () {
-        this.board.insertShape(shape_1.TetrominoType.T);
         requestAnimationFrame(this.gameLoop.bind(this));
+    };
+    Tetris.prototype.getInput = function () {
     };
     Tetris.prototype.gameLoop = function (timestamp) {
         if (timestamp < this.lastTime + (1000 / this.step)) {
@@ -422,11 +459,13 @@ var Tetris = /** @class */ (function () {
             return;
         }
         this.lastTime = timestamp;
+        if (this.newPiece) {
+            this.board.setActivePiece(shape_1.TetrominoType.SQUARE);
+            this.newPiece = false;
+        }
         this.board.draw();
-        this.board.shiftDown();
+        this.board.drawPiece();
         requestAnimationFrame(this.gameLoop.bind(this));
-    };
-    Tetris.prototype.createBoard = function () {
     };
     return Tetris;
 }());
@@ -434,7 +473,7 @@ var container = document.getElementById("game");
 var game = new Tetris(container);
 game.start();
 
-},{"./model/board":8,"./model/shape":10}],18:[function(require,module,exports) {
+},{"./model/board":8,"./model/shape":10}],26:[function(require,module,exports) {
 
 var global = (1, eval)('this');
 var OldModule = module.bundle.Module;
@@ -555,5 +594,5 @@ function hmrAccept(bundle, id) {
     return hmrAccept(global.require, id);
   });
 }
-},{}]},{},[18,4])
+},{}]},{},[26,4])
 //# sourceMappingURL=/dist/37b3b555bd92e05828ed5f1dc323386e.map
