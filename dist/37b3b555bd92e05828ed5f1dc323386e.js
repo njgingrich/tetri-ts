@@ -134,29 +134,25 @@ var TetrominoType;
 exports.Shapes = (_a = {},
     _a[TetrominoType.SQUARE] = [
         [
-            [0, 0, 0, 0],
-            [0, 1, 1, 0],
-            [0, 1, 1, 0],
-            [0, 0, 0, 0],
+            [0, 1, 1],
+            [0, 1, 1],
+            [0, 0, 0],
         ],
         [
-            [0, 0, 0, 0],
-            [0, 1, 1, 0],
-            [0, 1, 1, 0],
-            [0, 0, 0, 0],
+            [0, 1, 1],
+            [0, 1, 1],
+            [0, 0, 0],
         ],
         [
-            [0, 0, 0, 0],
-            [0, 1, 1, 0],
-            [0, 1, 1, 0],
-            [0, 0, 0, 0],
+            [0, 1, 1],
+            [0, 1, 1],
+            [0, 0, 0],
         ],
         [
-            [0, 0, 0, 0],
-            [0, 1, 1, 0],
-            [0, 1, 1, 0],
-            [0, 0, 0, 0],
-        ],
+            [0, 1, 1],
+            [0, 1, 1],
+            [0, 0, 0],
+        ]
     ],
     _a[TetrominoType.LINE] = [
         [
@@ -295,20 +291,7 @@ exports.Shapes = (_a = {},
         ]
     ],
     _a);
-/**
- * Relative coordinates of starting point for each shape
- * [hor, vert] i.e. [2, 1] means move left 2, up 1
- */
-exports.Offset = (_b = {},
-    _b[TetrominoType.SQUARE] = [[1, 2], [1, 2], [1, 2], [1, 2]],
-    _b[TetrominoType.LINE] = [[1, 2], [2, 1], [0, 2], [2, 0]],
-    _b[TetrominoType.L] = [[1, 1], [0, 2], [0, 1], [0, 1]],
-    _b[TetrominoType.J] = [[0, 1], [1, 1], [2, 1], [1, 2]],
-    _b[TetrominoType.S] = [[1, 1], [0, 2], [0, 1], [0, 1]],
-    _b[TetrominoType.Z] = [[1, 1], [0, 2], [0, 1], [0, 1]],
-    _b[TetrominoType.T] = [[1, 1], [0, 2], [0, 1], [0, 1]],
-    _b);
-var _a, _b;
+var _a;
 
 },{}],22:[function(require,module,exports) {
 "use strict";
@@ -317,7 +300,7 @@ var shape_1 = require("./shape");
 var color_1 = require("./color");
 var util_1 = require("../util");
 var Piece = /** @class */ (function () {
-    function Piece(type, boardWidth, ctx, size) {
+    function Piece(type, boardWidth, collides, setOnBoard, ctx, size) {
         this.type = type;
         this.color = color_1.Colors[this.type];
         this.rotation = 0;
@@ -326,6 +309,9 @@ var Piece = /** @class */ (function () {
         this.col = (boardWidth / 2) - Math.ceil(this.shape.length / 2); // x
         this.ctx = ctx;
         this.size = size;
+        this.boardWidth = boardWidth;
+        this.collides = collides;
+        this.setOnBoard = setOnBoard;
     }
     Piece.prototype.draw = function () {
         this.fill(color_1.Colors[this.type]);
@@ -333,10 +319,66 @@ var Piece = /** @class */ (function () {
     Piece.prototype.clear = function () {
         this.fill("white");
     };
+    Piece.prototype.left = function () {
+        if (this.collides(this, -1, 0, this.shape)) {
+            return;
+        }
+        this.clear();
+        this.col--;
+        this.draw();
+    };
+    Piece.prototype.right = function () {
+        if (this.collides(this, 1, 0, this.shape)) {
+            return;
+        }
+        this.clear();
+        this.col++;
+        this.draw();
+    };
+    Piece.prototype.down = function () {
+        if (this.collides(this, 0, 1, this.shape)) {
+            if (this.set())
+                return true;
+            return this.randomPiece();
+        }
+        this.clear();
+        this.row++;
+        this.draw();
+        return false;
+    };
+    Piece.prototype.rotate = function () {
+        var nextRotation = shape_1.Shapes[this.type][(this.rotation + 1) % 4];
+        if (this.collides(this, 0, 0, nextRotation)) {
+            return;
+        }
+        this.clear();
+        this.rotation = (this.rotation + 1) % 4;
+        this.shape = shape_1.Shapes[this.type][this.rotation];
+        this.draw();
+    };
+    Piece.prototype.set = function () {
+        for (var r = 0; r < this.shape.length; r++) {
+            for (var c = 0; c < this.shape.length; c++) {
+                if (!this.shape[r][c])
+                    continue;
+                if (this.row + r < 0) {
+                    console.log("You lose");
+                    return;
+                }
+                this.setOnBoard(this.row + r, this.col + c, this.type);
+            }
+        }
+    };
+    Piece.getRandomType = function () {
+        return Math.floor(Math.random() * 7) + 1;
+    };
+    Piece.prototype.randomPiece = function () {
+        return new Piece(Piece.getRandomType(), this.boardWidth, this.collides, this.setOnBoard, this.ctx, this.size);
+    };
     Piece.prototype.fill = function (fillstyle) {
         for (var r = 0; r < this.shape.length; r++) {
             for (var c = 0; c < this.shape.length; c++) {
-                var cell = this.shape[c][r];
+                var cell = this.shape[r][c];
                 if (cell > 0) {
                     this.ctx.fillStyle = fillstyle;
                     util_1.drawSquare(this.col + c, this.row + r, this.ctx, this.size);
@@ -344,37 +386,32 @@ var Piece = /** @class */ (function () {
             }
         }
     };
-    Piece.prototype.left = function () {
-        this.clear();
-        this.col--;
-        this.draw();
-    };
-    Piece.prototype.right = function () {
-        this.clear();
-        this.col++;
-        this.draw();
-    };
-    Piece.prototype.down = function () {
-        this.clear();
-        this.row++;
-        this.draw();
-    };
-    Piece.prototype.rotate = function () {
-        this.clear();
-        this.rotation = (this.rotation + 1) % 4;
-        this.shape = shape_1.Shapes[this.type][this.rotation];
-        this.draw();
-    };
     return Piece;
 }());
 exports.Piece = Piece;
 
-},{"./shape":10,"./color":19,"../util":21}],8:[function(require,module,exports) {
+},{"./shape":10,"./color":19,"../util":21}],28:[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var Keys;
+(function (Keys) {
+    Keys[Keys["UP"] = 38] = "UP";
+    Keys[Keys["DOWN"] = 40] = "DOWN";
+    Keys[Keys["LEFT"] = 37] = "LEFT";
+    Keys[Keys["RIGHT"] = 39] = "RIGHT";
+    Keys[Keys["A"] = 65] = "A";
+    Keys[Keys["D"] = 68] = "D";
+    Keys[Keys["W"] = 87] = "W";
+    Keys[Keys["S"] = 83] = "S";
+})(Keys = exports.Keys || (exports.Keys = {}));
+
+},{}],8:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var util_1 = require("../util");
 var color_1 = require("./color");
 var piece_1 = require("./piece");
+var keys_1 = require("./keys");
 var Board = /** @class */ (function () {
     function Board(container, width, height) {
         if (width === void 0) { width = 10; }
@@ -399,26 +436,42 @@ var Board = /** @class */ (function () {
         }
     };
     Board.prototype.setActivePiece = function (shape) {
-        this.activePiece = new piece_1.Piece(shape, this.width, this.ctx, this.tileSize);
+        this.activePiece = new piece_1.Piece(shape, this.width, this.collides.bind(this), this.setOnBoard.bind(this), this.ctx, this.tileSize);
     };
     Board.prototype.drawPiece = function () {
-        // const hOffset = ((this.width / 2) - 2)
-        // const t = Shapes[shape][rotation]
-        // const offset = Offset[shape][rotation]
         this.activePiece.draw();
     };
-    Board.prototype.shiftBoardDown = function () {
-        var bottomRow = this.grid[this.grid.length - 1].filter(function (el) { return el !== 0; });
-        var shouldNotShift = bottomRow.length > 0;
-        if (shouldNotShift) {
-            return;
+    Board.prototype.clearLines = function () {
+        var numLines = 0;
+        for (var row = 0; row < this.height; row++) {
+            var line = this.grid[row].filter(function (el) { return el === 0; }).length === 0;
+            if (line) {
+                numLines++;
+                for (var r = row; r > 0; r--) {
+                    for (var c = 0; c < this.width; c++) {
+                        this.grid[r][c] = this.grid[r - 1][c];
+                    }
+                }
+                for (var c = 0; c < this.width; c++) {
+                    this.grid[0][c] = 0;
+                }
+            }
         }
-        var cells = [];
-        for (var c = 0; c < this.width; c++) {
-            cells.push(0);
+        return numLines;
+    };
+    Board.prototype.getInput = function (e) {
+        if (e.keyCode === keys_1.Keys.UP || e.keyCode === keys_1.Keys.W) {
+            this.activePiece.rotate();
         }
-        this.grid.pop();
-        this.grid.unshift(cells);
+        if (e.keyCode === keys_1.Keys.DOWN || e.keyCode === keys_1.Keys.S) {
+            this.activePiece.down();
+        }
+        if (e.keyCode === keys_1.Keys.LEFT || e.keyCode === keys_1.Keys.A) {
+            this.activePiece.left();
+        }
+        if (e.keyCode === keys_1.Keys.RIGHT || e.keyCode === keys_1.Keys.D) {
+            this.activePiece.right();
+        }
     };
     Board.prototype.initGrid = function () {
         var rows = [];
@@ -431,41 +484,93 @@ var Board = /** @class */ (function () {
         }
         return rows;
     };
+    Board.prototype.setOnBoard = function (row, col, type) {
+        this.grid[row][col] = type;
+    };
+    Board.prototype.collides = function (piece, dx, dy, nextShape) {
+        for (var r = 0; r < nextShape.length; r++) {
+            for (var c = 0; c < nextShape.length; c++) {
+                var cell = nextShape[r][c];
+                if (cell === 0)
+                    continue;
+                var x = piece.col + c + dx;
+                var y = piece.row + r + dy;
+                if (y >= this.height || x < 0 || x >= this.width) {
+                    return true;
+                }
+                if (y < 0)
+                    continue;
+                if (this.grid[y][x]) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
     return Board;
 }());
 exports.Board = Board;
 
-},{"../util":21,"./color":19,"./piece":22}],4:[function(require,module,exports) {
+},{"../util":21,"./color":19,"./piece":22,"./keys":28}],4:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var board_1 = require("./model/board");
-var shape_1 = require("./model/shape");
+var piece_1 = require("./model/piece");
 var Tetris = /** @class */ (function () {
     function Tetris(container) {
         this.container = container;
         this.board = new board_1.Board(this.container);
-        this.step = 1;
-        this.lastTime = 0;
         this.newPiece = true;
+        this.lines = 0;
+        this.score = 0;
+        this.limit = 300;
+        this.lastFrameTimeMs = 0;
+        this.maxFPS = 60;
+        this.delta = 0;
+        this.timestep = 1000 / 60;
+        this.fps = 60;
+        this.framesThisSecond = 0;
+        this.lastFpsUpdate = 0;
+        this.gravity = 40;
     }
     Tetris.prototype.start = function () {
+        this.getInput();
+        this.board.setActivePiece(piece_1.Piece.getRandomType());
         requestAnimationFrame(this.gameLoop.bind(this));
     };
     Tetris.prototype.getInput = function () {
+        document.body.addEventListener("keydown", this.board.getInput.bind(this.board), false);
     };
     Tetris.prototype.gameLoop = function (timestamp) {
-        if (timestamp < this.lastTime + (1000 / this.step)) {
+        if (timestamp < this.lastFrameTimeMs + ((1000 / this.maxFPS) * this.gravity)) {
             requestAnimationFrame(this.gameLoop.bind(this));
             return;
         }
-        this.lastTime = timestamp;
-        if (this.newPiece) {
-            this.board.setActivePiece(shape_1.TetrominoType.SQUARE);
-            this.newPiece = false;
+        this.delta += timestamp - this.lastFrameTimeMs;
+        this.lastFrameTimeMs = timestamp;
+        if (timestamp > this.lastFpsUpdate + 1000) {
+            this.fps = 0.25 * this.framesThisSecond + 0.75 * this.fps;
+            this.lastFpsUpdate = timestamp;
+            this.framesThisSecond = 0;
         }
+        this.framesThisSecond++;
+        var numUpdateSteps = 0;
+        while (this.delta >= this.timestep) {
+            this.delta -= this.timestep;
+            if (++numUpdateSteps >= 240) {
+                break;
+            }
+        }
+        this.draw();
+        requestAnimationFrame(this.gameLoop.bind(this));
+    };
+    Tetris.prototype.draw = function () {
         this.board.draw();
         this.board.drawPiece();
-        requestAnimationFrame(this.gameLoop.bind(this));
+        var newPiece = this.board.activePiece.down();
+        this.lines += this.board.clearLines();
+        if (newPiece instanceof piece_1.Piece)
+            this.board.activePiece = newPiece;
     };
     return Tetris;
 }());
@@ -473,7 +578,7 @@ var container = document.getElementById("game");
 var game = new Tetris(container);
 game.start();
 
-},{"./model/board":8,"./model/shape":10}],26:[function(require,module,exports) {
+},{"./model/board":8,"./model/piece":22}],31:[function(require,module,exports) {
 
 var global = (1, eval)('this');
 var OldModule = module.bundle.Module;
@@ -594,5 +699,5 @@ function hmrAccept(bundle, id) {
     return hmrAccept(global.require, id);
   });
 }
-},{}]},{},[26,4])
+},{}]},{},[31,4])
 //# sourceMappingURL=/dist/37b3b555bd92e05828ed5f1dc323386e.map

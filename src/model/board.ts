@@ -1,7 +1,8 @@
-import { TetrominoType, Shape, Shapes, Offset } from './shape'
+import { TetrominoType, Shape, Shapes } from './shape'
 import { addClass, drawSquare } from '../util'
 import { Colors } from './color'
 import { Piece } from './piece';
+import { Keys } from './keys'
 
 // For now, equivalent to number[][] but may introduce stricter typing
 // i.e. [22][10], 22 rows of width 10
@@ -42,31 +43,53 @@ export class Board {
   }
 
   public setActivePiece(shape: TetrominoType) {
-    this.activePiece = new Piece(shape, this.width, this.ctx, this.tileSize)
+    this.activePiece = new Piece(shape,
+                                 this.width,
+                                 this.collides.bind(this),
+                                 this.setOnBoard.bind(this),
+                                 this.ctx,
+                                 this.tileSize)
   }
 
   public drawPiece() {
-    // const hOffset = ((this.width / 2) - 2)
-    // const t = Shapes[shape][rotation]
-    // const offset = Offset[shape][rotation]
     this.activePiece.draw()
   }
 
-  public shiftBoardDown() {
-    const bottomRow = this.grid[this.grid.length - 1].filter(el => el !== 0)
-    const shouldNotShift = bottomRow.length > 0
+  public clearLines(): number {
+    let numLines = 0
 
-    if (shouldNotShift) {
-      return
+    for (let row = 0; row < this.height; row++) {
+      let line = this.grid[row].filter(el => el === 0).length === 0
+
+      if (line) {
+        numLines++
+
+        for (let r = row; r > 0; r--) {
+          for (let c = 0; c < this.width; c++) {
+            this.grid[r][c] = this.grid[r-1][c]
+          }
+        }
+        for (let c = 0; c < this.width; c++) {
+          this.grid[0][c] = 0
+        }
+      }
     }
-
-    let cells = []
-    for (let c = 0; c < this.width; c++) {
-      cells.push(0)
+    return numLines
+  }
+  
+  public getInput(e: KeyboardEvent) {
+    if (e.keyCode === Keys.UP || e.keyCode === Keys.W) {
+      this.activePiece.rotate()
     }
-
-    this.grid.pop()
-    this.grid.unshift(cells)
+    if (e.keyCode === Keys.DOWN || e.keyCode === Keys.S) {
+      this.activePiece.down()
+    }
+    if (e.keyCode === Keys.LEFT || e.keyCode === Keys.A) {
+      this.activePiece.left()
+    }
+    if (e.keyCode === Keys.RIGHT || e.keyCode === Keys.D) {
+      this.activePiece.right()
+    }
   }
 
   private initGrid(): BoardGrid {
@@ -80,5 +103,29 @@ export class Board {
     }
 
     return rows
+  }
+
+  private setOnBoard(row: number, col: number, type: TetrominoType) {
+    this.grid[row][col] = type
+  }
+  
+  private collides(piece: Piece, dx: number, dy: number, nextShape: Shape) {
+    for (let r = 0; r < nextShape.length; r++) {
+      for (let c = 0; c < nextShape.length; c++) {
+        let cell = nextShape[r][c]
+        if (cell === 0) continue
+
+        let x = piece.col + c + dx
+        let y = piece.row + r + dy
+        if (y >= this.height || x < 0 || x >= this.width) {
+          return true
+        }
+        if (y < 0) continue
+        if (this.grid[y][x]) {
+          return true
+        }
+      }
+    }
+    return false
   }
 }

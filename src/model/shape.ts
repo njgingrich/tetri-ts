@@ -34,29 +34,25 @@ export enum TetrominoType {
 export const Shapes = {
   [TetrominoType.SQUARE]: [
     [
-      [0, 0, 0, 0],
-      [0, 1, 1, 0],
-      [0, 1, 1, 0],
-      [0, 0, 0, 0],
+      [0, 1, 1],
+      [0, 1, 1],
+      [0, 0, 0],
     ] as Shape,
     [
-      [0, 0, 0, 0],
-      [0, 1, 1, 0],
-      [0, 1, 1, 0],
-      [0, 0, 0, 0],
+      [0, 1, 1],
+      [0, 1, 1],
+      [0, 0, 0],
     ] as Shape,
     [
-      [0, 0, 0, 0],
-      [0, 1, 1, 0],
-      [0, 1, 1, 0],
-      [0, 0, 0, 0],
+      [0, 1, 1],
+      [0, 1, 1],
+      [0, 0, 0],
     ] as Shape,
     [
-      [0, 0, 0, 0],
-      [0, 1, 1, 0],
-      [0, 1, 1, 0],
-      [0, 0, 0, 0],
-    ] as Shape,
+      [0, 1, 1],
+      [0, 1, 1],
+      [0, 0, 0],
+    ] as Shape
   ],
   [TetrominoType.LINE]: [
     [
@@ -194,18 +190,4 @@ export const Shapes = {
       [0, 7, 0]
     ] as Shape
   ]
-}
-
-/**
- * Relative coordinates of starting point for each shape
- * [hor, vert] i.e. [2, 1] means move left 2, up 1
- */
-export const Offset = {
-  [TetrominoType.SQUARE]: [[1, 2], [1, 2], [1, 2], [1, 2]],
-  [TetrominoType.LINE]:   [[1, 2], [2, 1], [0, 2], [2, 0]],
-  [TetrominoType.L]:      [[1, 1], [0, 2], [0, 1], [0, 1]],
-  [TetrominoType.J]:      [[0, 1], [1, 1], [2, 1], [1, 2]],
-  [TetrominoType.S]:      [[1, 1], [0, 2], [0, 1], [0, 1]],
-  [TetrominoType.Z]:      [[1, 1], [0, 2], [0, 1], [0, 1]],
-  [TetrominoType.T]:      [[1, 1], [0, 2], [0, 1], [0, 1]],
 }
