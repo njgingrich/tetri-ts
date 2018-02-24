@@ -348,10 +348,15 @@ var Piece = /** @class */ (function () {
     };
     Piece.prototype.rotate = function () {
         var nextRotation = shape_1.Shapes[this.type][(this.rotation + 1) % 4];
+        var nudge = 0;
         if (this.collides(this, 0, 0, nextRotation)) {
+            nudge = this.col > this.boardWidth / 2 ? -1 : 1;
+        }
+        if (this.collides(this, nudge, 0, nextRotation)) {
             return;
         }
         this.clear();
+        this.col += nudge;
         this.rotation = (this.rotation + 1) % 4;
         this.shape = shape_1.Shapes[this.type][this.rotation];
         this.draw();
