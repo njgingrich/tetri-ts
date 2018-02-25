@@ -367,12 +367,12 @@ var Piece = /** @class */ (function () {
                 if (!this.shape[r][c])
                     continue;
                 if (this.row + r < 0) {
-                    console.log("You lose");
-                    return;
+                    return true;
                 }
                 this.setOnBoard(this.row + r, this.col + c, this.type);
             }
         }
+        return false;
     };
     Piece.getRandomType = function () {
         return Math.floor(Math.random() * 7) + 1;
@@ -525,7 +525,7 @@ var Tetris = /** @class */ (function () {
     function Tetris(container) {
         this.container = container;
         this.board = new board_1.Board(this.container);
-        this.newPiece = true;
+        this.paused = false;
         this.lines = 0;
         this.score = 0;
         this.limit = 300;
@@ -544,9 +544,16 @@ var Tetris = /** @class */ (function () {
         requestAnimationFrame(this.gameLoop.bind(this));
     };
     Tetris.prototype.getInput = function () {
+        var _this = this;
         document.body.addEventListener("keydown", this.board.getInput.bind(this.board), false);
+        var pauseButton = document.getElementById("btn-pause");
+        pauseButton.addEventListener("click", function (e) {
+            _this.paused = !_this.paused;
+        });
     };
     Tetris.prototype.gameLoop = function (timestamp) {
+        if (this.paused)
+            return;
         if (timestamp < this.lastFrameTimeMs + ((1000 / this.maxFPS) * this.gravity)) {
             requestAnimationFrame(this.gameLoop.bind(this));
             return;
@@ -574,6 +581,12 @@ var Tetris = /** @class */ (function () {
         this.board.drawPiece();
         var newPiece = this.board.activePiece.down();
         this.lines += this.board.clearLines();
+        if (newPiece === true) {
+            var overlay = document.getElementById("overlay");
+            if (overlay)
+                overlay.style.display = "block";
+            this.paused = true;
+        }
         if (newPiece instanceof piece_1.Piece)
             this.board.activePiece = newPiece;
     };
@@ -583,7 +596,7 @@ var container = document.getElementById("game");
 var game = new Tetris(container);
 game.start();
 
-},{"./model/board":8,"./model/piece":22}],31:[function(require,module,exports) {
+},{"./model/board":8,"./model/piece":22}],42:[function(require,module,exports) {
 
 var global = (1, eval)('this');
 var OldModule = module.bundle.Module;
@@ -704,5 +717,5 @@ function hmrAccept(bundle, id) {
     return hmrAccept(global.require, id);
   });
 }
-},{}]},{},[31,4])
+},{}]},{},[42,4])
 //# sourceMappingURL=/dist/37b3b555bd92e05828ed5f1dc323386e.map

@@ -1,4 +1,5 @@
 export enum Keys {
+  SPACE = 32,
   UP = 38,
   DOWN = 40,
   LEFT = 37,

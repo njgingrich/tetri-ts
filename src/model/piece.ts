@@ -77,6 +77,17 @@ export class Piece {
     return false
   }
 
+  public hardDown() {
+    let dy = 1
+    while (!this.collides(this, 0, dy, this.shape)) {
+      dy++
+    }
+
+    this.clear()
+    this.row += dy - 1
+    this.draw()
+  }
+
   public rotate() {
     const nextRotation = Shapes[this.type][(this.rotation + 1) % 4]
     let nudge = 0
@@ -97,19 +108,19 @@ export class Piece {
     this.draw()
   }
   
-  public set() {
+  public set(): boolean {
     for (let r = 0; r < this.shape.length; r++) {
       for (let c = 0; c < this.shape.length; c++) {
         if (!this.shape[r][c]) continue
 
         if (this.row + r < 0) {
-          console.log("You lose")
-          return
+          return true
         }
 
         this.setOnBoard(this.row + r, this.col + c, this.type)
       }
     }
+    return false
   }
 
   public static getRandomType(): number {

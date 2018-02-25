@@ -40,6 +40,7 @@ export class Board {
         drawSquare(c, r, this.ctx, this.tileSize)
       }
     }
+    this.activePiece.draw()
   }
 
   public setActivePiece(shape: TetrominoType) {
@@ -49,10 +50,6 @@ export class Board {
                                  this.setOnBoard.bind(this),
                                  this.ctx,
                                  this.tileSize)
-  }
-
-  public drawPiece() {
-    this.activePiece.draw()
   }
 
   public clearLines(): number {
@@ -90,6 +87,14 @@ export class Board {
     if (e.keyCode === Keys.RIGHT || e.keyCode === Keys.D) {
       this.activePiece.right()
     }
+    if (e.keyCode === Keys.SPACE) {
+      this.activePiece.hardDown()
+    }
+  }
+
+  public reset(shape: TetrominoType) {
+    this.grid = this.initGrid()
+    this.setActivePiece(shape)
   }
 
   private initGrid(): BoardGrid {

@@ -2,40 +2,43 @@
 <html>
   <head>
     <title>TetriTS</title>
-  </head>
-  <style>
-  * {
-    box-sizing: border-box;  
-  }
-
-  .container {
-    border: 1px solid red;
-    width: fit-content;
-  }
-
-  .row {
-    display: block;
-    height: 32px;
-  }
-
-  .square { background-color: red; }
-  .line { background-color: blue; }
-  .l { background-color: green; }
-  .j { background-color: orange; }
-  .s { background-color: aqua; }
-  .z { background-color: darkmagenta; }
-  .t { background-color: gray; }
-
-  .cell {
-    display: inline-block;
-    border: 1px solid black;
-    width: 32px;
-    height: 32px;
-  }
-  </style>
-  <body>
+    <link href="https://fonts.googleapis.com/css?family=Bungee+Inline" rel="stylesheet">
+    <link rel="stylesheet" href="/dist/e122b20ed20435bc6ae84f4cf5882489.css">
+  <script src="/dist/e122b20ed20435bc6ae84f4cf5882489.js"></script></head>
+  <body class="container">
+    <header class="header">
+      <h1>Tetri-TS</h1>
+    </header>
     <canvas id="game"></canvas>
+    <div id="overlay">
+      <h2>Game Over!</h2>
+      <span id="btn-playagain" class="playagain">Play Again?</span>
+    </div>
+    <div id="pause-overlay">
+      <h2>Game Paused</h2>
+    </div>
+    <aside class="next-piece">
 
-    <script src="/dist/37b3b555bd92e05828ed5f1dc323386e.js"></script>
+    </aside>
+    <aside class="scoring">
+      <div class="box">
+        <span>Level</span>
+        <span id="level">1</span>
+      </div>
+      <div class="box">
+        <span>Score</span>
+        <span id="score">0</span>
+      </div>
+      <div class="box">
+        <span>Lines</span>
+        <span id="lines">0</span>
+      </div>
+    </aside>
+    <aside class="options">
+      <span id="btn-pause" class="btn">Pause</span>
+      <span id="btn-restart" class="btn">Restart</span>
+    </aside>
+
+    <script src="/dist/cd8a7dbfe00fa1bc3956ae5c9aabab45.js"></script>
   </body>
 </html>
