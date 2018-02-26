@@ -8,7 +8,7 @@
   "private": false,
   "scripts": {
     "start": "parcel index.html",
-    "build": "rm -rf docs && parcel build --out-dir docs --public-url ./tetri-ts && mv docs/tetri-ts.html docs/index.html"
+    "build": "rm -rf docs && parcel build --out-dir docs --public-url /tetri-ts/ && mv docs/tetri-ts.html docs/index.html"
   },
   "devDependencies": {
     "typescript": "^2.7.2"
