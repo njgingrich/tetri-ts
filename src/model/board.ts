@@ -17,13 +17,18 @@ export class Board {
   tileSize: number // in px
   activePiece: Piece
   
-  constructor(container: HTMLCanvasElement, width: number, height: number) {
+  constructor(
+    container: HTMLCanvasElement,
+    width: number,
+    height: number,
+    tileSize: number
+  ) {
     this.width = width
     this.height = height
     this.container = container
     this.ctx = this.container.getContext('2d') as CanvasRenderingContext2D
 
-    this.tileSize = 32
+    this.tileSize = tileSize
     this.container.width = (this.width * this.tileSize)
     this.container.height = (this.height * this.tileSize)
     this.grid = this.initGrid()
@@ -40,16 +45,7 @@ export class Board {
         drawSquare(c, r, this.ctx, this.tileSize)
       }
     }
-    this.activePiece.draw()
-  }
-
-  public setActivePiece(shape: TetrominoType) {
-    this.activePiece = new Piece(shape,
-                                 this.width,
-                                 this.collides.bind(this),
-                                 this.setOnBoard.bind(this),
-                                 this.ctx,
-                                 this.tileSize)
+    this.activePiece.draw(this.ctx)
   }
 
   public clearLines(): number {
@@ -76,25 +72,41 @@ export class Board {
   
   public getInput(e: KeyboardEvent) {
     if (e.keyCode === Keys.UP || e.keyCode === Keys.W) {
-      this.activePiece.rotate()
+      this.activePiece.rotate(
+        this.ctx,
+        this.collides.bind(this)
+      )
     }
     if (e.keyCode === Keys.DOWN || e.keyCode === Keys.S) {
-      this.activePiece.down()
+      this.activePiece.down(
+        this.ctx,
+        this.collides.bind(this),
+        this.setOnBoard.bind(this)
+      )
     }
     if (e.keyCode === Keys.LEFT || e.keyCode === Keys.A) {
-      this.activePiece.left()
+      this.activePiece.left(
+        this.ctx,
+        this.collides.bind(this)
+      )
     }
     if (e.keyCode === Keys.RIGHT || e.keyCode === Keys.D) {
-      this.activePiece.right()
+      this.activePiece.right(
+        this.ctx,
+        this.collides.bind(this)
+      )
     }
     if (e.keyCode === Keys.SPACE) {
-      this.activePiece.hardDown()
+      this.activePiece.hardDown(
+        this.ctx,
+        this.collides.bind(this)
+      )
     }
   }
 
-  public reset(shape: TetrominoType) {
+  public reset() {
     this.grid = this.initGrid()
-    this.setActivePiece(shape)
+    this.activePiece = Piece.randomPiece(this.width, this.tileSize)
   }
 
   private initGrid(): BoardGrid {
@@ -108,6 +120,14 @@ export class Board {
     }
 
     return rows
+  }
+
+  public movePieceDown(): Piece | boolean {
+    return this.activePiece.down(
+      this.ctx,
+      this.collides.bind(this),
+      this.setOnBoard.bind(this)
+    )
   }
 
   private setOnBoard(row: number, col: number, type: TetrominoType) {

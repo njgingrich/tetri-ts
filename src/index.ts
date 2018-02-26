@@ -7,6 +7,7 @@ class Tetris {
   board: Board
   width: number
   height: number
+  tileSize: number
   onDeck: Piece | null
   container: HTMLCanvasElement
   levelEl: HTMLElement
@@ -33,7 +34,8 @@ class Tetris {
     this.container = container
     this.width = 10
     this.height = 20
-    this.board = new Board(this.container, this.width, this.height)
+    this.tileSize = 32
+    this.board = new Board(this.container, this.width, this.height, this.tileSize)
     this.onDeck = null
     this.levelEl = document.getElementById("level") as HTMLElement
     this.linesEl = document.getElementById("lines") as HTMLElement
@@ -58,7 +60,7 @@ class Tetris {
 
   public start() {
     this.getInput()
-    this.board.setActivePiece(Piece.getRandomType())
+    this.board.activePiece = Piece.randomPiece(this.width, this.tileSize)
     this.raf = requestAnimationFrame(this.gameLoop.bind(this))
   }
 
@@ -124,7 +126,7 @@ class Tetris {
       this.onDeck = null
     }
     this.board.draw()
-    const newPiece = this.board.activePiece.down()
+    const newPiece = this.board.movePieceDown()
 
     if (newPiece === true) {
       this.gameOver = true
@@ -178,7 +180,7 @@ class Tetris {
     this.level = 0
     this.gravity = 40
 
-    this.board.reset(Piece.getRandomType())
+    this.board.reset()
     this.raf = requestAnimationFrame(this.gameLoop.bind(this))
   }
 
