@@ -1,8 +1,8 @@
 import { TetrominoType, Shape, Shapes } from './shape'
 import { addClass, drawSquare } from '../util'
-import { Colors } from './color'
+import { Colors } from '../util/color'
 import { Piece } from './piece';
-import { Keys } from './keys'
+import { Keys } from '../util/keys'
 
 // For now, equivalent to number[][] but may introduce stricter typing
 // i.e. [22][10], 22 rows of width 10
@@ -17,7 +17,7 @@ export class Board {
   tileSize: number // in px
   activePiece: Piece
   
-  constructor(container: HTMLCanvasElement, width = 10, height = 20) {
+  constructor(container: HTMLCanvasElement, width: number, height: number) {
     this.width = width
     this.height = height
     this.container = container
@@ -59,7 +59,6 @@ export class Board {
       let line = this.grid[row].filter(el => el === 0).length === 0
 
       if (line) {
-        console.log('cleared lines')
         numLines++
 
         for (let r = row; r > 0; r--) {

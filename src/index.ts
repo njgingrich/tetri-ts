@@ -1,10 +1,12 @@
 import { Board } from './model/board'
 import { Piece } from './model/piece'
 import { TetrominoType } from './model/shape';
-import { Keys } from './model/keys';
+import { Keys } from './util/keys';
 
 class Tetris {
   board: Board
+  width: number
+  height: number
   onDeck: Piece | null
   container: HTMLCanvasElement
   levelEl: HTMLElement
@@ -29,7 +31,9 @@ class Tetris {
 
   constructor(container: HTMLCanvasElement) {
     this.container = container
-    this.board = new Board(this.container)
+    this.width = 10
+    this.height = 20
+    this.board = new Board(this.container, this.width, this.height)
     this.onDeck = null
     this.levelEl = document.getElementById("level") as HTMLElement
     this.linesEl = document.getElementById("lines") as HTMLElement

@@ -1,5 +1,5 @@
 import { TetrominoType, Shape, Shapes } from './shape'
-import { Colors } from './color'
+import { Colors } from '../util/color'
 import { drawSquare } from '../util'
 
 export class Piece {

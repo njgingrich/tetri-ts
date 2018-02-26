@@ -5,18 +5,6 @@ export interface Shape extends Array<number[]> {
   2: [number, number, number]
 }
 
-export class Tetromino {
-  shape: Shape
-  type: TetrominoType
-  rotation: number
-
-  constructor(type: TetrominoType, rotation = 0) {
-    this.type = type
-    this.rotation = rotation
-    this.shape = Shapes[type][this.rotation]
-  }
-}
-
 export enum TetrominoType {
   SQUARE = 1,
   LINE,
