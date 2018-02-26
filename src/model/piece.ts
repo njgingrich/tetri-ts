@@ -21,11 +21,11 @@ export class Piece {
     this.boardWidth = boardWidth
     this.size = size
 
-    this.row = -2 // y
-    this.col = (boardWidth / 2) - Math.ceil(this.shape.length / 2); // x
-    this.color = Colors[this.type]
     this.rotation = 0
+    this.color = Colors[this.type]
     this.shape = Shapes[this.type][this.rotation]
+    this.row = -2 // y
+    this.col = (this.boardWidth / 2) - Math.ceil(this.shape.length / 2); // x
   }
 
   public draw(ctx: CanvasRenderingContext2D) {
@@ -123,8 +123,9 @@ export class Piece {
   }
 
   public static randomPiece(boardWidth: number, size: number): Piece {
+    const newType = Piece.getRandomType()
     return new Piece(
-      Piece.getRandomType(),
+      newType,
       boardWidth,
       size
     )
