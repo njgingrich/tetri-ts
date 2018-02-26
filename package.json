@@ -1,5 +1,5 @@
 {
-  "name": "tetrits",
+  "name": "tetri-ts",
   "version": "1.0.0",
   "description": "Tetris game in TypeScript",
   "main": "index.html",
@@ -7,7 +7,8 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "start": "parcel index.html"
+    "start": "parcel index.html",
+    "build": "rm -rf docs && parcel build --out-dir docs --public-url tetri-ts && mv docs/tetri-ts.html docs/index.html"
   },
   "devDependencies": {
     "typescript": "^2.7.2"
