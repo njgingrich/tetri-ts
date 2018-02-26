@@ -103,6 +103,19 @@ var Colors;
     Colors[Colors["aqua"] = 6] = "aqua";
     Colors[Colors["orange"] = 7] = "orange";
 })(Colors = exports.Colors || (exports.Colors = {}));
+exports.Backgrounds = [
+    "#ffffff",
+    "#52aced",
+    "#388601",
+    "#30f894",
+    "#550918",
+    "#917232",
+    "#ad18dc",
+    "#6181d9",
+    "#97226e",
+    "#e0a60a",
+    "#340770",
+];
 
 },{}],13:[function(require,module,exports) {
 "use strict";
@@ -546,6 +559,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var board_1 = require("./model/board");
 var piece_1 = require("./model/piece");
 var keys_1 = require("./util/keys");
+var color_1 = require("./util/color");
 var Tetris = /** @class */ (function () {
     function Tetris(container) {
         this.container = container;
@@ -657,6 +671,7 @@ var Tetris = /** @class */ (function () {
         if (this.shouldIncreaseLevel()) {
             this.level++;
             this.gravity = this.gravity - 4;
+            this.updateBackground();
         }
         this.levelEl.textContent = "" + this.level;
     };
@@ -667,6 +682,9 @@ var Tetris = /** @class */ (function () {
         this.nextPiece = toDraw;
         this.onDeck = null;
         this.nextPiece.drawNextPiece(ctx);
+    };
+    Tetris.prototype.updateBackground = function () {
+        document.body.style.backgroundColor = color_1.Backgrounds[this.level];
     };
     Tetris.prototype.pauseGame = function () {
         cancelAnimationFrame(this.raf);
@@ -696,6 +714,7 @@ var Tetris = /** @class */ (function () {
         this.level = 0;
         this.gravity = 40;
         this.board.reset();
+        this.updateBackground();
         this.raf = requestAnimationFrame(this.gameLoop.bind(this));
     };
     // NES scoring
@@ -714,7 +733,7 @@ var container = document.getElementById("game");
 var game = new Tetris(container);
 game.start();
 
-},{"./model/board":11,"./model/piece":10,"./util/keys":12}],16:[function(require,module,exports) {
+},{"./model/board":11,"./model/piece":10,"./util/keys":12,"./util/color":14}],16:[function(require,module,exports) {
 
 var global = (1, eval)('this');
 var OldModule = module.bundle.Module;

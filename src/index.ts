@@ -2,6 +2,7 @@ import { Board } from './model/board'
 import { Piece } from './model/piece'
 import { TetrominoType } from './model/shape';
 import { Keys } from './util/keys';
+import { Backgrounds } from './util/color';
 
 class Tetris {
   board: Board
@@ -155,6 +156,7 @@ class Tetris {
     if (this.shouldIncreaseLevel()) {
       this.level++
       this.gravity = this.gravity - 4
+      this.updateBackground()
     }
     this.levelEl.textContent = `${this.level}`
   }
@@ -166,6 +168,10 @@ class Tetris {
     this.nextPiece = toDraw
     this.onDeck = null
     this.nextPiece.drawNextPiece(ctx)
+  }
+
+  private updateBackground() {
+    document.body.style.backgroundColor = Backgrounds[this.level]
   }
 
   private pauseGame() {
@@ -197,6 +203,7 @@ class Tetris {
     this.gravity = 40
 
     this.board.reset()
+    this.updateBackground()
     this.raf = requestAnimationFrame(this.gameLoop.bind(this))
   }
 
