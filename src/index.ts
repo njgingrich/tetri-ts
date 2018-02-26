@@ -1,6 +1,7 @@
 import { Board } from './model/board'
 import { Piece } from './model/piece'
 import { TetrominoType } from './model/shape';
+import { Keys } from './model/keys';
 
 class Tetris {
   board: Board
@@ -58,21 +59,26 @@ class Tetris {
   }
 
   private getInput() {
-    document.body.addEventListener("keydown", (e) => {
-      this.board.getInput(e)
-    }, false)
-    const pauseButton = document.getElementById("btn-pause") as HTMLElement
-    const restartButton = document.getElementById("btn-restart") as HTMLElement
-    const playAgainButton = document.getElementById("btn-playagain") as HTMLElement
-
-    pauseButton.addEventListener("click", (e) => {
+    function pause(this: any) {
       this.paused = !this.paused
       if (this.paused) {
         this.pauseGame()
       } else {
         this.unpauseGame()
       }
-    })
+    }
+
+    document.body.addEventListener("keydown", (e) => {
+      this.board.getInput(e)
+      if (e.keyCode === Keys.Q) {
+        pause.call(this)
+      }
+    }, false)
+    const pauseButton = document.getElementById("btn-pause") as HTMLElement
+    const restartButton = document.getElementById("btn-restart") as HTMLElement
+    const playAgainButton = document.getElementById("btn-playagain") as HTMLElement
+
+    pauseButton.addEventListener("click", pause.bind(this))
 
     restartButton.addEventListener("click", this.reset.bind(this))
     playAgainButton.addEventListener("click", this.reset.bind(this))
@@ -110,7 +116,6 @@ class Tetris {
 
   private draw() {
     if (this.onDeck) {
-      console.log('created new piece')
       this.board.activePiece = this.onDeck
       this.onDeck = null
     }
@@ -133,6 +138,12 @@ class Tetris {
 
     this.score += this.getScoreForLines(linesCleared)
     this.scoreEl.textContent = `${this.score}`
+
+    if (this.shouldIncreaseLevel()) {
+      this.level++
+      this.gravity = this.gravity - 4
+    }
+    this.levelEl.textContent = `${this.level}`
   }
 
   private pauseGame() {
@@ -171,6 +182,11 @@ class Tetris {
   private getScoreForLines(lines: number): number {
     const multipliers = [0, 40, 100, 300, 1200]
     return multipliers[lines] * (this.level + 1)
+  }
+
+  private shouldIncreaseLevel(): boolean {
+    if (this.level === 10) return false // max level
+    return (this.lines >= (this.level + 1) * 10)
   }
 }
 
