@@ -1,8 +1,8 @@
 {
-  "name": "tetrijs",
-  "version": "0.1.0",
-  "description": "Tetris game in Javascript",
-  "main": "dist/index.js",
+  "name": "tetrits",
+  "version": "1.0.0",
+  "description": "Tetris game in TypeScript",
+  "main": "index.html",
   "author": "Nathan Gingrich",
   "license": "MIT",
   "private": false,
