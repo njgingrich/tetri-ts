@@ -6,6 +6,7 @@ export enum Keys {
   RIGHT = 39,
   A = 65,
   D = 68,
-  W = 87,
+  Q = 81,
   S = 83,
+  W = 87,
 }

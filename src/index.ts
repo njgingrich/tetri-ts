@@ -4,6 +4,7 @@ import { TetrominoType } from './model/shape';
 
 class Tetris {
   board: Board
+  onDeck: Piece | null
   container: HTMLCanvasElement
   levelEl: HTMLElement
   linesEl: HTMLElement
@@ -28,12 +29,13 @@ class Tetris {
   constructor(container: HTMLCanvasElement) {
     this.container = container
     this.board = new Board(this.container)
+    this.onDeck = null
     this.levelEl = document.getElementById("level") as HTMLElement
     this.linesEl = document.getElementById("lines") as HTMLElement
     this.scoreEl = document.getElementById("score") as HTMLElement
     this.paused = false
     this.gameOver = false
-    this.level = 1
+    this.level = 0
     this.lines = 0
     this.score = 0
     this.raf = -1
@@ -56,7 +58,9 @@ class Tetris {
   }
 
   private getInput() {
-    document.body.addEventListener("keydown", this.board.getInput.bind(this.board), false)
+    document.body.addEventListener("keydown", (e) => {
+      this.board.getInput(e)
+    }, false)
     const pauseButton = document.getElementById("btn-pause") as HTMLElement
     const restartButton = document.getElementById("btn-restart") as HTMLElement
     const playAgainButton = document.getElementById("btn-playagain") as HTMLElement
@@ -105,20 +109,30 @@ class Tetris {
   }
 
   private draw() {
+    if (this.onDeck) {
+      console.log('created new piece')
+      this.board.activePiece = this.onDeck
+      this.onDeck = null
+    }
     this.board.draw()
     const newPiece = this.board.activePiece.down()
-    console.log('new piece:', newPiece)
 
     if (newPiece === true) {
       this.gameOver = true
       this.paused = true
     }
-    if (newPiece instanceof Piece) this.board.activePiece = newPiece
+    if (newPiece instanceof Piece) {
+      this.onDeck = newPiece
+    }
   }
 
   private update() {
-    this.lines += this.board.clearLines()
+    const linesCleared = this.board.clearLines()
+    this.lines += linesCleared
     this.linesEl.textContent = `${this.lines}`
+
+    this.score += this.getScoreForLines(linesCleared)
+    this.scoreEl.textContent = `${this.score}`
   }
 
   private pauseGame() {
@@ -146,11 +160,17 @@ class Tetris {
 
     this.lines = 0
     this.score = 0
-    this.level = 1
+    this.level = 0
     this.gravity = 40
 
     this.board.reset(Piece.getRandomType())
     this.raf = requestAnimationFrame(this.gameLoop.bind(this))
+  }
+
+  // NES scoring
+  private getScoreForLines(lines: number): number {
+    const multipliers = [0, 40, 100, 300, 1200]
+    return multipliers[lines] * (this.level + 1)
   }
 }
 

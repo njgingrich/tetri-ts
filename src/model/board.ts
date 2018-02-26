@@ -59,6 +59,7 @@ export class Board {
       let line = this.grid[row].filter(el => el === 0).length === 0
 
       if (line) {
+        console.log('cleared lines')
         numLines++
 
         for (let r = row; r > 0; r--) {
