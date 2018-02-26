@@ -31,9 +31,13 @@ export class Piece {
   public draw(ctx: CanvasRenderingContext2D) {
     this.fill(ctx, Colors[this.type])
   }
-
-  public clear(ctx: CanvasRenderingContext2D) {
-    this.fill(ctx, "white")
+  
+  public clearNextPiece(ctx: CanvasRenderingContext2D) {
+    this.fillNextPiece(ctx, "white")
+  }
+  
+  public drawNextPiece(ctx: CanvasRenderingContext2D) {
+    this.fillNextPiece(ctx, Colors[this.type])
   }
 
   public left(ctx: CanvasRenderingContext2D, collides: Function) {
@@ -138,6 +142,26 @@ export class Piece {
         if (cell > 0) {
           ctx.fillStyle = fillstyle
           drawSquare(this.col + c, this.row + r, ctx, this.size)
+        }
+      }
+    }
+  }
+  
+  private clear(ctx: CanvasRenderingContext2D) {
+    this.fill(ctx, "white")
+  }
+  
+  private fillNextPiece(ctx: CanvasRenderingContext2D, fillstyle: string) {
+    for (let r = 0; r < 4; r++) {
+      for (let c = 0; c < 4; c++) {
+        if (this.shape[r] && this.shape[r][c]) {
+          if (this.shape[r][c] > 0) {
+            ctx.fillStyle = fillstyle
+            drawSquare(c, r, ctx, this.size)
+          }
+        } else {
+          ctx.fillStyle = "white"
+          drawSquare(c, r, ctx, this.size)
         }
       }
     }

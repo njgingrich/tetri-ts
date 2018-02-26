@@ -9,6 +9,8 @@ class Tetris {
   height: number
   tileSize: number
   onDeck: Piece | null
+  nextPiece: Piece
+  nextPieceContainer: HTMLCanvasElement
   container: HTMLCanvasElement
   levelEl: HTMLElement
   linesEl: HTMLElement
@@ -37,9 +39,13 @@ class Tetris {
     this.tileSize = 32
     this.board = new Board(this.container, this.width, this.height, this.tileSize)
     this.onDeck = null
+    this.nextPiece = Piece.randomPiece(this.width, this.tileSize)
     this.levelEl = document.getElementById("level") as HTMLElement
     this.linesEl = document.getElementById("lines") as HTMLElement
     this.scoreEl = document.getElementById("score") as HTMLElement
+    this.nextPieceContainer = document.getElementById("nextpiece") as HTMLCanvasElement
+    this.nextPieceContainer.width = (4 * this.tileSize)
+    this.nextPieceContainer.height = (4 * this.tileSize)
     this.paused = false
     this.gameOver = false
     this.level = 0
@@ -60,7 +66,9 @@ class Tetris {
 
   public start() {
     this.getInput()
-    this.board.activePiece = Piece.randomPiece(this.width, this.tileSize)
+    this.board.activePiece = this.nextPiece
+    this.nextPiece = Piece.randomPiece(this.width, this.tileSize)
+    this.drawNextPiece(this.nextPiece)
     this.raf = requestAnimationFrame(this.gameLoop.bind(this))
   }
 
@@ -122,8 +130,7 @@ class Tetris {
 
   private draw() {
     if (this.onDeck) {
-      this.board.activePiece = this.onDeck
-      this.onDeck = null
+      this.drawNextPiece(this.onDeck)
     }
     this.board.draw()
     const newPiece = this.board.movePieceDown()
@@ -150,6 +157,15 @@ class Tetris {
       this.gravity = this.gravity - 4
     }
     this.levelEl.textContent = `${this.level}`
+  }
+
+  private drawNextPiece(toDraw: Piece) {
+    const ctx = this.nextPieceContainer.getContext('2d') as CanvasRenderingContext2D
+    this.board.activePiece = this.nextPiece
+    this.nextPiece.clearNextPiece(ctx)
+    this.nextPiece = toDraw
+    this.onDeck = null
+    this.nextPiece.drawNextPiece(ctx)
   }
 
   private pauseGame() {
