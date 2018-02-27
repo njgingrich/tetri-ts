@@ -265,6 +265,7 @@ class Tetris {
     this.lines = 0
     this.score = 0
     this.level = 0
+    this.step = 1.1
     this.nextPiece = Piece.randomPiece(this.width, this.tileSize)
 
     this.board.reset()
