@@ -24,7 +24,7 @@ export class Piece {
     this.rotation = 0
     this.color = Colors[this.type]
     this.shape = Shapes[this.type][this.rotation]
-    this.row = 0 // y
+    this.row = -1 // y
     this.col = (this.boardWidth / 2) - Math.ceil(this.shape.length / 2); // x
   }
 
@@ -93,7 +93,7 @@ export class Piece {
     for (let r = 0; r < this.shape.length; r++) {
       for (let c = 0; c < this.shape.length; c++) {
         if (!this.shape[r][c]) continue
-        if (this.row + r < 0) return true
+        if (this.row + r <= 0) return true
       }
     }
     return false

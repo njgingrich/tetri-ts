@@ -7,26 +7,23 @@ import { Shapes } from './model/shape'
 import { GameEvent } from './model/event'
 
 class Tetris {
-  board: Board
   width: number
   height: number
   tileSize: number
   nextPiece: Piece
-  nextPieceContainer: HTMLCanvasElement
   container: HTMLCanvasElement
-  levelEl: HTMLElement
-  linesEl: HTMLElement
-  scoreEl: HTMLElement
+  nextPieceContainer: HTMLCanvasElement
+  board: Board
+  queuedActions: GameEvent[]
+  needNewPiece: boolean
+
+  paused: boolean
   level: number
   lines: number
   score: number
-  paused: boolean
-
-  queuedActions: GameEvent[]
   lastTick: number
   dt: number
   step: number
-  needNewPiece: boolean
 
   constructor(container: HTMLCanvasElement) {
     this.container = container
@@ -35,9 +32,6 @@ class Tetris {
     this.tileSize = 32
     this.board = new Board(this.container, this.width, this.height, this.tileSize)
     this.nextPiece = Piece.randomPiece(this.width, this.tileSize)
-    this.levelEl = document.getElementById("level") as HTMLElement
-    this.linesEl = document.getElementById("lines") as HTMLElement
-    this.scoreEl = document.getElementById("score") as HTMLElement
     this.nextPieceContainer = document.getElementById("nextpiece") as HTMLCanvasElement
     this.nextPieceContainer.width = (4 * this.tileSize)
     this.nextPieceContainer.height = (4 * this.tileSize)
@@ -47,7 +41,7 @@ class Tetris {
     this.score = 0
     this.queuedActions = []
     this.dt = 0
-    this.step = 1.0
+    this.step = 1.1
     this.needNewPiece = false
   }
 
@@ -128,8 +122,7 @@ class Tetris {
   }
 
   private update(ticks: number) {
-    const e = this.queuedActions.shift()
-    if (e !== undefined) this.handleEvent(e)
+    this.handleNextEvent()
 
     if (this.paused) return
 
@@ -140,9 +133,9 @@ class Tetris {
     }
 
     if (this.needNewPiece) {
-      
       if (this.board.activePiece.isAtTop()) {
         this.queuedActions = Array.of(GameEvent.GAME_OVER)
+        this.needNewPiece = false
         return
       }
 
@@ -153,21 +146,18 @@ class Tetris {
     }
 
     const linesCleared = this.board.clearLines()
-    this.lines += linesCleared
-    this.linesEl.textContent = `${this.lines}`
-
-    this.score += this.getScoreForLines(linesCleared)
-    this.scoreEl.textContent = `${this.score}`
-
-    // if (this.shouldIncreaseLevel()) {
-    //   this.level++
-    //   this.gravity = this.gravity - 4
-    //   this.updateBackground()
-    // }
-    // this.levelEl.textContent = `${this.level}`
+    this.updateStats(linesCleared)
   }
 
-  private handleEvent(event: GameEvent) {
+  /**
+   * Perform actions based off the current event.
+   *
+   * @param event The most recent event on top of the event queue.
+   */
+  private handleNextEvent() {
+    const event = this.queuedActions.shift()
+    if (event === undefined) return
+
     switch (event) {
       case GameEvent.HARD_DOWN:
       case GameEvent.MOVE_DOWN:
@@ -196,22 +186,60 @@ class Tetris {
     }
   }
 
+  /**
+   * Draw the next piece to be put in play.
+   * @param toDraw The piece to draw in the window
+   */
   private drawNextPiece(toDraw: Piece) {
     const ctx = this.nextPieceContainer.getContext('2d') as CanvasRenderingContext2D
     this.nextPiece.clearNextPiece(ctx)
     this.nextPiece.drawNextPiece(ctx)
   }
 
+  /**
+   * Change the background to reflect the current level of the game.
+   */
   private updateBackground() {
     document.body.style.backgroundColor = Backgrounds[this.level]
   }
 
+  /**
+   * Update the line count, the score, and the level each time the lines are
+   * cleared.
+   * 
+   * @param linesCleared The number of lines cleared.
+   */
+  private updateStats(linesCleared: number) {
+    const levelEl = document.getElementById("level") as HTMLElement
+    const linesEl = document.getElementById("lines") as HTMLElement
+    const scoreEl = document.getElementById("score") as HTMLElement
+
+    this.lines += linesCleared
+    linesEl.textContent = `${this.lines}`
+
+    this.score += this.getScoreForLines(linesCleared)
+    scoreEl.textContent = `${this.score}`
+
+    if (this.shouldIncreaseLevel()) {
+      this.level++
+      this.step = this.step - 0.1
+      this.updateBackground()
+    }
+    levelEl.textContent = `${this.level}`
+  }
+
+  /**
+   * Pause the game and show the overlay.
+   */
   private pauseGame() {
     this.paused = true
     const overlay = document.getElementById("pause-overlay")
     if (overlay) overlay.style.display = "block"
   }
 
+  /**
+   * Unpause the game and remove the overlay.
+   */
   private unpauseGame() {
     this.paused = false
     const overlay = document.getElementById("pause-overlay")
@@ -219,11 +247,17 @@ class Tetris {
     requestAnimationFrame(this.loop.bind(this))
   }
 
+  /**
+   * End the game and show the overlay.
+   */
   private gameOver() {
     const overlay = document.getElementById("overlay")
     if (overlay) overlay.style.display = "block"
   }
 
+  /**
+   * Restart the game from scratch.
+   */
   private reset() {
     const overlay = document.getElementById("overlay")
     if (overlay) overlay.style.display = "none"
@@ -231,18 +265,32 @@ class Tetris {
     this.lines = 0
     this.score = 0
     this.level = 0
+    this.nextPiece = Piece.randomPiece(this.width, this.tileSize)
 
     this.board.reset()
     this.updateBackground()
     requestAnimationFrame(this.loop.bind(this))
   }
 
-  // NES scoring
+  /**
+   * Determine the score for the number of lines cleared.
+   * 1 line: 40 * (level + 1)
+   * 2 lines: 100 * (level + 1)
+   * 3 lines: 300 * (level + 1)
+   * 4 lines: 1200 * (level + 1)
+   *
+   * @param lines The number of lines cleared
+   */
   private getScoreForLines(lines: number): number {
     const multipliers = [0, 40, 100, 300, 1200]
     return multipliers[lines] * (this.level + 1)
   }
 
+  /**
+   * Determine whether or not the level should be increased. The level should
+   * be Math.floor(lines / 10), i.e. level 2 once 20 lines, level 3 once 30
+   * lines, etc.
+   */
   private shouldIncreaseLevel(): boolean {
     if (this.level === 10) return false // max level
     return (this.lines >= (this.level + 1) * 10)

@@ -310,7 +310,7 @@ var Piece = /** @class */ (function () {
         this.rotation = 0;
         this.color = color_1.Colors[this.type];
         this.shape = shape_1.Shapes[this.type][this.rotation];
-        this.row = 0; // y
+        this.row = -1; // y
         this.col = (this.boardWidth / 2) - Math.ceil(this.shape.length / 2); // x
     }
     Piece.prototype.draw = function (ctx) {
@@ -371,7 +371,7 @@ var Piece = /** @class */ (function () {
             for (var c = 0; c < this.shape.length; c++) {
                 if (!this.shape[r][c])
                     continue;
-                if (this.row + r < 0)
+                if (this.row + r <= 0)
                     return true;
             }
         }
@@ -620,9 +620,6 @@ var Tetris = /** @class */ (function () {
         this.tileSize = 32;
         this.board = new board_1.Board(this.container, this.width, this.height, this.tileSize);
         this.nextPiece = piece_1.Piece.randomPiece(this.width, this.tileSize);
-        this.levelEl = document.getElementById("level");
-        this.linesEl = document.getElementById("lines");
-        this.scoreEl = document.getElementById("score");
         this.nextPieceContainer = document.getElementById("nextpiece");
         this.nextPieceContainer.width = (4 * this.tileSize);
         this.nextPieceContainer.height = (4 * this.tileSize);
@@ -632,7 +629,7 @@ var Tetris = /** @class */ (function () {
         this.score = 0;
         this.queuedActions = [];
         this.dt = 0;
-        this.step = 1.0;
+        this.step = 1.1;
         this.needNewPiece = false;
     }
     Tetris.prototype.start = function () {
@@ -708,9 +705,7 @@ var Tetris = /** @class */ (function () {
         this.drawNextPiece(this.nextPiece);
     };
     Tetris.prototype.update = function (ticks) {
-        var e = this.queuedActions.shift();
-        if (e !== undefined)
-            this.handleEvent(e);
+        this.handleNextEvent();
         if (this.paused)
             return;
         this.dt += ticks;
@@ -721,6 +716,7 @@ var Tetris = /** @class */ (function () {
         if (this.needNewPiece) {
             if (this.board.activePiece.isAtTop()) {
                 this.queuedActions = Array.of(event_1.GameEvent.GAME_OVER);
+                this.needNewPiece = false;
                 return;
             }
             this.needNewPiece = false;
@@ -729,18 +725,17 @@ var Tetris = /** @class */ (function () {
             this.nextPiece = piece_1.Piece.randomPiece(this.width, this.tileSize);
         }
         var linesCleared = this.board.clearLines();
-        this.lines += linesCleared;
-        this.linesEl.textContent = "" + this.lines;
-        this.score += this.getScoreForLines(linesCleared);
-        this.scoreEl.textContent = "" + this.score;
-        // if (this.shouldIncreaseLevel()) {
-        //   this.level++
-        //   this.gravity = this.gravity - 4
-        //   this.updateBackground()
-        // }
-        // this.levelEl.textContent = `${this.level}`
+        this.updateStats(linesCleared);
     };
-    Tetris.prototype.handleEvent = function (event) {
+    /**
+     * Perform actions based off the current event.
+     *
+     * @param event The most recent event on top of the event queue.
+     */
+    Tetris.prototype.handleNextEvent = function () {
+        var event = this.queuedActions.shift();
+        if (event === undefined)
+            return;
         switch (event) {
             case event_1.GameEvent.HARD_DOWN:
             case event_1.GameEvent.MOVE_DOWN:
@@ -768,20 +763,54 @@ var Tetris = /** @class */ (function () {
             }
         }
     };
+    /**
+     * Draw the next piece to be put in play.
+     * @param toDraw The piece to draw in the window
+     */
     Tetris.prototype.drawNextPiece = function (toDraw) {
         var ctx = this.nextPieceContainer.getContext('2d');
         this.nextPiece.clearNextPiece(ctx);
         this.nextPiece.drawNextPiece(ctx);
     };
+    /**
+     * Change the background to reflect the current level of the game.
+     */
     Tetris.prototype.updateBackground = function () {
         document.body.style.backgroundColor = color_1.Backgrounds[this.level];
     };
+    /**
+     * Update the line count, the score, and the level each time the lines are
+     * cleared.
+     *
+     * @param linesCleared The number of lines cleared.
+     */
+    Tetris.prototype.updateStats = function (linesCleared) {
+        var levelEl = document.getElementById("level");
+        var linesEl = document.getElementById("lines");
+        var scoreEl = document.getElementById("score");
+        this.lines += linesCleared;
+        linesEl.textContent = "" + this.lines;
+        this.score += this.getScoreForLines(linesCleared);
+        scoreEl.textContent = "" + this.score;
+        if (this.shouldIncreaseLevel()) {
+            this.level++;
+            this.step = this.step - 0.1;
+            this.updateBackground();
+        }
+        levelEl.textContent = "" + this.level;
+    };
+    /**
+     * Pause the game and show the overlay.
+     */
     Tetris.prototype.pauseGame = function () {
         this.paused = true;
         var overlay = document.getElementById("pause-overlay");
         if (overlay)
             overlay.style.display = "block";
     };
+    /**
+     * Unpause the game and remove the overlay.
+     */
     Tetris.prototype.unpauseGame = function () {
         this.paused = false;
         var overlay = document.getElementById("pause-overlay");
@@ -789,11 +818,17 @@ var Tetris = /** @class */ (function () {
             overlay.style.display = "none";
         requestAnimationFrame(this.loop.bind(this));
     };
+    /**
+     * End the game and show the overlay.
+     */
     Tetris.prototype.gameOver = function () {
         var overlay = document.getElementById("overlay");
         if (overlay)
             overlay.style.display = "block";
     };
+    /**
+     * Restart the game from scratch.
+     */
     Tetris.prototype.reset = function () {
         var overlay = document.getElementById("overlay");
         if (overlay)
@@ -801,15 +836,29 @@ var Tetris = /** @class */ (function () {
         this.lines = 0;
         this.score = 0;
         this.level = 0;
+        this.nextPiece = piece_1.Piece.randomPiece(this.width, this.tileSize);
         this.board.reset();
         this.updateBackground();
         requestAnimationFrame(this.loop.bind(this));
     };
-    // NES scoring
+    /**
+     * Determine the score for the number of lines cleared.
+     * 1 line: 40 * (level + 1)
+     * 2 lines: 100 * (level + 1)
+     * 3 lines: 300 * (level + 1)
+     * 4 lines: 1200 * (level + 1)
+     *
+     * @param lines The number of lines cleared
+     */
     Tetris.prototype.getScoreForLines = function (lines) {
         var multipliers = [0, 40, 100, 300, 1200];
         return multipliers[lines] * (this.level + 1);
     };
+    /**
+     * Determine whether or not the level should be increased. The level should
+     * be Math.floor(lines / 10), i.e. level 2 once 20 lines, level 3 once 30
+     * lines, etc.
+     */
     Tetris.prototype.shouldIncreaseLevel = function () {
         if (this.level === 10)
             return false; // max level
