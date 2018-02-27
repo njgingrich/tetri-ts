@@ -1,15 +1,16 @@
 import { Board } from './model/board'
 import { Piece } from './model/piece'
-import { TetrominoType } from './model/shape';
-import { Keys } from './util/keys';
-import { Backgrounds } from './util/color';
+import { TetrominoType } from './model/shape'
+import { Keys } from './util/keys'
+import { Backgrounds } from './util/color'
+import { Shapes } from './model/shape'
+import { GameEvent } from './model/event'
 
 class Tetris {
   board: Board
   width: number
   height: number
   tileSize: number
-  onDeck: Piece | null
   nextPiece: Piece
   nextPieceContainer: HTMLCanvasElement
   container: HTMLCanvasElement
@@ -20,18 +21,12 @@ class Tetris {
   lines: number
   score: number
   paused: boolean
-  gameOver: boolean
-  raf: number
 
-  limit: number
-  lastFrameTimeMs: number
-  maxFPS: number
-  delta: number
-  timestep: number
-  fps: number
-  framesThisSecond: number
-  lastFpsUpdate: number
-  gravity: number
+  queuedActions: GameEvent[]
+  lastTick: number
+  dt: number
+  step: number
+  needNewPiece: boolean
 
   constructor(container: HTMLCanvasElement) {
     this.container = container
@@ -39,7 +34,6 @@ class Tetris {
     this.height = 20
     this.tileSize = 32
     this.board = new Board(this.container, this.width, this.height, this.tileSize)
-    this.onDeck = null
     this.nextPiece = Piece.randomPiece(this.width, this.tileSize)
     this.levelEl = document.getElementById("level") as HTMLElement
     this.linesEl = document.getElementById("lines") as HTMLElement
@@ -48,21 +42,13 @@ class Tetris {
     this.nextPieceContainer.width = (4 * this.tileSize)
     this.nextPieceContainer.height = (4 * this.tileSize)
     this.paused = false
-    this.gameOver = false
     this.level = 0
     this.lines = 0
     this.score = 0
-    this.raf = -1
-
-    this.limit = 300
-    this.lastFrameTimeMs = 0
-    this.maxFPS = 60
-    this.delta = 0
-    this.timestep = 1000 / 60
-    this.fps = 60
-    this.framesThisSecond = 0
-    this.lastFpsUpdate = 0
-    this.gravity = 40
+    this.queuedActions = []
+    this.dt = 0
+    this.step = 1.0
+    this.needNewPiece = false
   }
 
   public start() {
@@ -70,82 +56,102 @@ class Tetris {
     this.board.activePiece = this.nextPiece
     this.nextPiece = Piece.randomPiece(this.width, this.tileSize)
     this.drawNextPiece(this.nextPiece)
-    this.raf = requestAnimationFrame(this.gameLoop.bind(this))
+
+    this.lastTick = performance.now()
+    requestAnimationFrame(this.loop.bind(this))
   }
 
   private getInput() {
-    function pause(this: any) {
-      this.paused = !this.paused
-      if (this.paused) {
-        this.pauseGame()
-      } else {
-        this.unpauseGame()
-      }
-    }
-
     document.body.addEventListener("keydown", (e) => {
-      this.board.getInput(e)
-      if (e.keyCode === Keys.Q) {
-        pause.call(this)
+      switch (e.keyCode) {
+        case Keys.A, Keys.LEFT: {
+          this.queuedActions.push(GameEvent.MOVE_LEFT)
+          break
+        }
+        case Keys.D, Keys.RIGHT: {
+          this.queuedActions.push(GameEvent.MOVE_RIGHT)
+          break
+        }
+        case Keys.W, Keys.UP: {
+          this.queuedActions.push(GameEvent.ROTATE)
+          break
+        }
+        case Keys.D, Keys.DOWN: {
+          this.queuedActions.push(GameEvent.MOVE_DOWN)
+          break
+        }
+        case Keys.SPACE: {
+          this.queuedActions.push(GameEvent.HARD_DOWN)
+          break
+        }
+        case Keys.Q: {
+          if (this.paused) {
+            this.queuedActions.push(GameEvent.UNPAUSE)
+          } else {
+            this.queuedActions.push(GameEvent.PAUSE)
+          }
+          break
+        }
       }
     }, false)
+
     const pauseButton = document.getElementById("btn-pause") as HTMLElement
     const restartButton = document.getElementById("btn-restart") as HTMLElement
     const playAgainButton = document.getElementById("btn-playagain") as HTMLElement
 
-    pauseButton.addEventListener("click", pause.bind(this))
-
-    restartButton.addEventListener("click", this.reset.bind(this))
-    playAgainButton.addEventListener("click", this.reset.bind(this))
+    pauseButton.addEventListener("click", (e) => {
+      if (this.paused) {
+        this.queuedActions.push(GameEvent.PAUSE)
+      } else {
+        this.queuedActions.push(GameEvent.UNPAUSE)
+      }
+    }, false)
+    restartButton.addEventListener("click", (e) => {
+      this.queuedActions.push(GameEvent.RESTART)
+    }, false)
+    playAgainButton.addEventListener("click", (e) => {
+      this.queuedActions.push(GameEvent.RESTART)
+    })
   }
 
-  private gameLoop(timestamp: any) {
-    if (this.gameOver) this.end()
-
-    if (timestamp < this.lastFrameTimeMs + ((1000 / this.maxFPS) * this.gravity)) {
-      this.raf = requestAnimationFrame(this.gameLoop.bind(this))
-      return
-    }
-    this.delta += timestamp - this.lastFrameTimeMs
-    this.lastFrameTimeMs = timestamp
-
-    if (timestamp > this.lastFpsUpdate + 1000) {
-      this.fps = 0.25 * this.framesThisSecond + 0.75 * this.fps
-
-      this.lastFpsUpdate = timestamp
-      this.framesThisSecond = 0
-    }
-
-    this.framesThisSecond++
-    let numUpdateSteps = 0
-    while (this.delta >= this.timestep) {
-      this.update()
-      this.delta -= this.timestep
-        if (++numUpdateSteps >= 240) {
-          break
-        }
-    }
+  private loop(time: any) {
+    const now = performance.now()
+    this.update((now - this.lastTick) / 1000.0)
     this.draw()
-    this.raf = requestAnimationFrame(this.gameLoop.bind(this))
+    this.lastTick = now
+    requestAnimationFrame(this.loop.bind(this))
   }
 
   private draw() {
-    if (this.onDeck) {
-      this.drawNextPiece(this.onDeck)
-    }
     this.board.draw()
-    const newPiece = this.board.movePieceDown()
-
-    if (newPiece === true) {
-      this.gameOver = true
-      this.paused = true
-    }
-    if (newPiece instanceof Piece) {
-      this.onDeck = newPiece
-    }
+    this.drawNextPiece(this.nextPiece)
   }
 
-  private update() {
+  private update(ticks: number) {
+    const e = this.queuedActions.shift()
+    if (e !== undefined) this.handleEvent(e)
+
+    if (this.paused) return
+
+    this.dt += ticks
+    if (this.dt > this.step) {
+      this.dt -= this.step
+      this.needNewPiece = this.board.movePieceDown()
+    }
+
+    if (this.needNewPiece) {
+      
+      if (this.board.activePiece.isAtTop()) {
+        this.queuedActions = Array.of(GameEvent.GAME_OVER)
+        return
+      }
+
+      this.needNewPiece = false
+      this.board.lockPiece()
+      this.board.activePiece = this.nextPiece
+      this.nextPiece = Piece.randomPiece(this.width, this.tileSize)
+    }
+
     const linesCleared = this.board.clearLines()
     this.lines += linesCleared
     this.linesEl.textContent = `${this.lines}`
@@ -153,20 +159,46 @@ class Tetris {
     this.score += this.getScoreForLines(linesCleared)
     this.scoreEl.textContent = `${this.score}`
 
-    if (this.shouldIncreaseLevel()) {
-      this.level++
-      this.gravity = this.gravity - 4
-      this.updateBackground()
+    // if (this.shouldIncreaseLevel()) {
+    //   this.level++
+    //   this.gravity = this.gravity - 4
+    //   this.updateBackground()
+    // }
+    // this.levelEl.textContent = `${this.level}`
+  }
+
+  private handleEvent(event: GameEvent) {
+    switch (event) {
+      case GameEvent.HARD_DOWN:
+      case GameEvent.MOVE_DOWN:
+      case GameEvent.MOVE_LEFT:
+      case GameEvent.MOVE_RIGHT:
+      case GameEvent.ROTATE: {
+        this.board.handleEvent(event)
+        break
+      }
+      case GameEvent.PAUSE: {
+        this.pauseGame()
+        break
+      }
+      case GameEvent.UNPAUSE: {
+        this.unpauseGame()
+        break
+      }
+      case GameEvent.RESTART: {
+        this.reset()
+        break
+      }
+      case GameEvent.GAME_OVER: {
+        this.gameOver()
+        break
+      }
     }
-    this.levelEl.textContent = `${this.level}`
   }
 
   private drawNextPiece(toDraw: Piece) {
     const ctx = this.nextPieceContainer.getContext('2d') as CanvasRenderingContext2D
-    this.board.activePiece = this.nextPiece
     this.nextPiece.clearNextPiece(ctx)
-    this.nextPiece = toDraw
-    this.onDeck = null
     this.nextPiece.drawNextPiece(ctx)
   }
 
@@ -175,36 +207,34 @@ class Tetris {
   }
 
   private pauseGame() {
-    cancelAnimationFrame(this.raf)
+    this.paused = true
     const overlay = document.getElementById("pause-overlay")
     if (overlay) overlay.style.display = "block"
   }
 
   private unpauseGame() {
+    this.paused = false
     const overlay = document.getElementById("pause-overlay")
     if (overlay) overlay.style.display = "none"
-    this.raf = requestAnimationFrame(this.gameLoop.bind(this))
+    requestAnimationFrame(this.loop.bind(this))
   }
 
-  private end() {
+  private gameOver() {
     const overlay = document.getElementById("overlay")
     if (overlay) overlay.style.display = "block"
   }
 
-  private reset(e: MouseEvent) {
-    cancelAnimationFrame(this.raf)
+  private reset() {
     const overlay = document.getElementById("overlay")
     if (overlay) overlay.style.display = "none"
-    this.gameOver = false
 
     this.lines = 0
     this.score = 0
     this.level = 0
-    this.gravity = 40
 
     this.board.reset()
     this.updateBackground()
-    this.raf = requestAnimationFrame(this.gameLoop.bind(this))
+    requestAnimationFrame(this.loop.bind(this))
   }
 
   // NES scoring

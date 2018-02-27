@@ -3,6 +3,7 @@ import { addClass, drawSquare } from '../util'
 import { Colors } from '../util/color'
 import { Piece } from './piece';
 import { Keys } from '../util/keys'
+import { GameEvent } from './event';
 
 // For now, equivalent to number[][] but may introduce stricter typing
 // i.e. [22][10], 22 rows of width 10
@@ -70,38 +71,60 @@ export class Board {
     return numLines
   }
   
-  public getInput(e: KeyboardEvent) {
-    if (e.keyCode === Keys.UP || e.keyCode === Keys.W) {
-      this.activePiece.rotate(
-        this.ctx,
-        this.collides.bind(this)
-      )
+  /**
+   * Returns true if the piece is stuck and a new piece should be created
+   * @param event GameEvent
+   */
+  public handleEvent(event: GameEvent): boolean {
+    switch (event) {
+      case GameEvent.MOVE_LEFT: {
+        if (!this.collides(this.activePiece, -1, 0, this.activePiece.shape)) {
+          this.activePiece.left(this.ctx)
+        }
+        break
+      }
+      case GameEvent.MOVE_RIGHT: {
+        if (!this.collides(this.activePiece, 1, 0, this.activePiece.shape)) {
+          this.activePiece.right(this.ctx)
+        }
+        break
+      }
+      case GameEvent.MOVE_DOWN: {
+        if (this.collides(this.activePiece, 0, 1, this.activePiece.shape)) {
+          return true
+        }
+        this.activePiece.down(this.ctx)
+        break
+      }
+      case GameEvent.HARD_DOWN: {
+        let dy = 1
+        while (!this.collides(this.activePiece, 0, dy, this.activePiece.shape)) {
+          dy++
+        }
+        this.activePiece.hardDown(this.ctx, dy)
+        break
+      }
+      case GameEvent.ROTATE: {
+        const nextRotationIx = (this.activePiece.rotation + 1) % 4
+        const nextRotation = Shapes[this.activePiece.type][nextRotationIx]
+        let nudge = 0
+    
+        if (this.collides(this.activePiece, 0, 0, nextRotation)) {
+          nudge = this.activePiece.col > this.width / 2 ? -1 : 1
+        }
+    
+        if (this.collides(this.activePiece, nudge, 0, nextRotation)) {
+          break
+        }
+
+        this.activePiece.rotate(this.ctx, nudge)
+        break
+      }
+      default: {
+        return false
+      }
     }
-    if (e.keyCode === Keys.DOWN || e.keyCode === Keys.S) {
-      this.activePiece.down(
-        this.ctx,
-        this.collides.bind(this),
-        this.setOnBoard.bind(this)
-      )
-    }
-    if (e.keyCode === Keys.LEFT || e.keyCode === Keys.A) {
-      this.activePiece.left(
-        this.ctx,
-        this.collides.bind(this)
-      )
-    }
-    if (e.keyCode === Keys.RIGHT || e.keyCode === Keys.D) {
-      this.activePiece.right(
-        this.ctx,
-        this.collides.bind(this)
-      )
-    }
-    if (e.keyCode === Keys.SPACE) {
-      this.activePiece.hardDown(
-        this.ctx,
-        this.collides.bind(this)
-      )
-    }
+    return false
   }
 
   public reset() {
@@ -122,12 +145,16 @@ export class Board {
     return rows
   }
 
-  public movePieceDown(): Piece | boolean {
-    return this.activePiece.down(
-      this.ctx,
-      this.collides.bind(this),
-      this.setOnBoard.bind(this)
-    )
+  public movePieceDown(): boolean {
+    if (this.collides(this.activePiece, 0, 1, this.activePiece.shape)) {
+      return true
+    }
+    this.activePiece.down(this.ctx)
+    return false
+  }
+
+  public lockPiece() {
+    this.activePiece.set(this.setOnBoard.bind(this))
   }
 
   private setOnBoard(row: number, col: number, type: TetrominoType) {

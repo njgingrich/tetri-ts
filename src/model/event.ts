@@ -1,0 +1,12 @@
+export enum GameEvent {
+  PAUSE,
+  UNPAUSE,
+  START,
+  RESTART,
+  GAME_OVER,
+  MOVE_LEFT,
+  MOVE_RIGHT,
+  MOVE_DOWN,
+  HARD_DOWN,
+  ROTATE,
+}

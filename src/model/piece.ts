@@ -24,7 +24,7 @@ export class Piece {
     this.rotation = 0
     this.color = Colors[this.type]
     this.shape = Shapes[this.type][this.rotation]
-    this.row = -2 // y
+    this.row = 0 // y
     this.col = (this.boardWidth / 2) - Math.ceil(this.shape.length / 2); // x
   }
 
@@ -40,66 +40,31 @@ export class Piece {
     this.fillNextPiece(ctx, Colors[this.type])
   }
 
-  public left(ctx: CanvasRenderingContext2D, collides: Function) {
-    if (collides(this, -1, 0, this.shape)) {
-      return
-    }
-
+  public left(ctx: CanvasRenderingContext2D) {
     this.clear(ctx)
     this.col--
     this.draw(ctx)
   }
 
-  public right(ctx: CanvasRenderingContext2D, collides: Function) {
-    if (collides(this, 1, 0, this.shape)) {
-      return
-    }
-
+  public right(ctx: CanvasRenderingContext2D) {
     this.clear(ctx)
     this.col++
     this.draw(ctx)
   }
 
-  public down(
-    ctx: CanvasRenderingContext2D,
-    collides: Function,
-    setOnBoard: Function
-  ): Piece | boolean {
-    if (collides(this, 0, 1, this.shape)) {
-      if (this.set(setOnBoard)) return true
-      return Piece.randomPiece(this.boardWidth, this.size)
-    }
-
+  public down(ctx: CanvasRenderingContext2D) {
     this.clear(ctx)
     this.row++
     this.draw(ctx)
-    return false
   }
 
-  public hardDown(ctx: CanvasRenderingContext2D, collides: Function) {
-    let dy = 1
-    while (!collides(this, 0, dy, this.shape)) {
-      dy++
-    }
-
+  public hardDown(ctx: CanvasRenderingContext2D, dy: number) {
     this.clear(ctx)
     this.row += dy - 1
     this.draw(ctx)
   }
 
-  public rotate(ctx: CanvasRenderingContext2D, collides: Function) {
-    const nextRotation = Shapes[this.type][(this.rotation + 1) % 4]
-    let nudge = 0
-
-    if (collides(this, 0, 0, nextRotation)) {
-      nudge = this.col > this.boardWidth / 2 ? -1 : 1
-    }
-
-
-    if (collides(this, nudge, 0, nextRotation)) {
-      return
-    }
-
+  public rotate(ctx: CanvasRenderingContext2D, nudge: number) {
     this.clear(ctx)
     this.col += nudge
     this.rotation = (this.rotation + 1) % 4
@@ -107,16 +72,28 @@ export class Piece {
     this.draw(ctx)
   }
   
-  public set(setOnBoard: Function): boolean {
+  /**
+   * Draw the piece onto the board (once it can no longer move).
+   * @param setOnBoard Function to draw onto the board
+   */
+  public set(setOnBoard: Function) {
     for (let r = 0; r < this.shape.length; r++) {
       for (let c = 0; c < this.shape.length; c++) {
         if (!this.shape[r][c]) continue
-
-        if (this.row + r < 0) {
-          return true
-        }
-
         setOnBoard(this.row + r, this.col + c, this.type)
+      }
+    }
+  }
+
+  /**
+   * Check if the piece is at the top of the board, and if
+   * therefore it should be game over.
+   */
+  public isAtTop() {
+    for (let r = 0; r < this.shape.length; r++) {
+      for (let c = 0; c < this.shape.length; c++) {
+        if (!this.shape[r][c]) continue
+        if (this.row + r < 0) return true
       }
     }
     return false

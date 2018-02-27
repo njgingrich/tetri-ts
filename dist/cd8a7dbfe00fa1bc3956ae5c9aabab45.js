@@ -69,55 +69,7 @@ require = (function (modules, cache, entry) {
 
   // Override the current require with this new one
   return newRequire;
-})({15:[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-function addClass(node, classes) {
-    if (node.className) {
-        node.className += " " + classes;
-    }
-    else {
-        node.className = classes;
-    }
-}
-exports.addClass = addClass;
-function drawSquare(x, y, ctx, size) {
-    ctx.fillRect(x * size, y * size, size, size);
-    var ss = ctx.strokeStyle;
-    ctx.strokeStyle = "#222222";
-    ctx.strokeRect(x * size, y * size, size, size);
-    ctx.strokeStyle = ss;
-}
-exports.drawSquare = drawSquare;
-
-},{}],14:[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var Colors;
-(function (Colors) {
-    Colors[Colors["red"] = 1] = "red";
-    Colors[Colors["blue"] = 2] = "blue";
-    Colors[Colors["green"] = 3] = "green";
-    Colors[Colors["brown"] = 4] = "brown";
-    Colors[Colors["purple"] = 5] = "purple";
-    Colors[Colors["aqua"] = 6] = "aqua";
-    Colors[Colors["orange"] = 7] = "orange";
-})(Colors = exports.Colors || (exports.Colors = {}));
-exports.Backgrounds = [
-    "#ffffff",
-    "#52aced",
-    "#388601",
-    "#30f894",
-    "#550918",
-    "#917232",
-    "#ad18dc",
-    "#6181d9",
-    "#97226e",
-    "#e0a60a",
-    "#340770",
-];
-
-},{}],13:[function(require,module,exports) {
+})({13:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TetrominoType;
@@ -296,6 +248,54 @@ exports.Shapes = (_a = {},
     _a);
 var _a;
 
+},{}],15:[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+function addClass(node, classes) {
+    if (node.className) {
+        node.className += " " + classes;
+    }
+    else {
+        node.className = classes;
+    }
+}
+exports.addClass = addClass;
+function drawSquare(x, y, ctx, size) {
+    ctx.fillRect(x * size, y * size, size, size);
+    var ss = ctx.strokeStyle;
+    ctx.strokeStyle = "#222222";
+    ctx.strokeRect(x * size, y * size, size, size);
+    ctx.strokeStyle = ss;
+}
+exports.drawSquare = drawSquare;
+
+},{}],14:[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var Colors;
+(function (Colors) {
+    Colors[Colors["red"] = 1] = "red";
+    Colors[Colors["blue"] = 2] = "blue";
+    Colors[Colors["green"] = 3] = "green";
+    Colors[Colors["brown"] = 4] = "brown";
+    Colors[Colors["purple"] = 5] = "purple";
+    Colors[Colors["aqua"] = 6] = "aqua";
+    Colors[Colors["orange"] = 7] = "orange";
+})(Colors = exports.Colors || (exports.Colors = {}));
+exports.Backgrounds = [
+    "#ffffff",
+    "#52aced",
+    "#388601",
+    "#30f894",
+    "#550918",
+    "#917232",
+    "#ad18dc",
+    "#6181d9",
+    "#97226e",
+    "#e0a60a",
+    "#340770",
+];
+
 },{}],10:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -310,7 +310,7 @@ var Piece = /** @class */ (function () {
         this.rotation = 0;
         this.color = color_1.Colors[this.type];
         this.shape = shape_1.Shapes[this.type][this.rotation];
-        this.row = -2; // y
+        this.row = 0; // y
         this.col = (this.boardWidth / 2) - Math.ceil(this.shape.length / 2); // x
     }
     Piece.prototype.draw = function (ctx) {
@@ -322,66 +322,57 @@ var Piece = /** @class */ (function () {
     Piece.prototype.drawNextPiece = function (ctx) {
         this.fillNextPiece(ctx, color_1.Colors[this.type]);
     };
-    Piece.prototype.left = function (ctx, collides) {
-        if (collides(this, -1, 0, this.shape)) {
-            return;
-        }
+    Piece.prototype.left = function (ctx) {
         this.clear(ctx);
         this.col--;
         this.draw(ctx);
     };
-    Piece.prototype.right = function (ctx, collides) {
-        if (collides(this, 1, 0, this.shape)) {
-            return;
-        }
+    Piece.prototype.right = function (ctx) {
         this.clear(ctx);
         this.col++;
         this.draw(ctx);
     };
-    Piece.prototype.down = function (ctx, collides, setOnBoard) {
-        if (collides(this, 0, 1, this.shape)) {
-            if (this.set(setOnBoard))
-                return true;
-            return Piece.randomPiece(this.boardWidth, this.size);
-        }
+    Piece.prototype.down = function (ctx) {
         this.clear(ctx);
         this.row++;
         this.draw(ctx);
-        return false;
     };
-    Piece.prototype.hardDown = function (ctx, collides) {
-        var dy = 1;
-        while (!collides(this, 0, dy, this.shape)) {
-            dy++;
-        }
+    Piece.prototype.hardDown = function (ctx, dy) {
         this.clear(ctx);
         this.row += dy - 1;
         this.draw(ctx);
     };
-    Piece.prototype.rotate = function (ctx, collides) {
-        var nextRotation = shape_1.Shapes[this.type][(this.rotation + 1) % 4];
-        var nudge = 0;
-        if (collides(this, 0, 0, nextRotation)) {
-            nudge = this.col > this.boardWidth / 2 ? -1 : 1;
-        }
-        if (collides(this, nudge, 0, nextRotation)) {
-            return;
-        }
+    Piece.prototype.rotate = function (ctx, nudge) {
         this.clear(ctx);
         this.col += nudge;
         this.rotation = (this.rotation + 1) % 4;
         this.shape = shape_1.Shapes[this.type][this.rotation];
         this.draw(ctx);
     };
+    /**
+     * Draw the piece onto the board (once it can no longer move).
+     * @param setOnBoard Function to draw onto the board
+     */
     Piece.prototype.set = function (setOnBoard) {
         for (var r = 0; r < this.shape.length; r++) {
             for (var c = 0; c < this.shape.length; c++) {
                 if (!this.shape[r][c])
                     continue;
-                if (this.row + r < 0) {
-                    return true;
-                }
                 setOnBoard(this.row + r, this.col + c, this.type);
+            }
+        }
+    };
+    /**
+     * Check if the piece is at the top of the board, and if
+     * therefore it should be game over.
+     */
+    Piece.prototype.isAtTop = function () {
+        for (var r = 0; r < this.shape.length; r++) {
+            for (var c = 0; c < this.shape.length; c++) {
+                if (!this.shape[r][c])
+                    continue;
+                if (this.row + r < 0)
+                    return true;
             }
         }
         return false;
@@ -427,30 +418,31 @@ var Piece = /** @class */ (function () {
 }());
 exports.Piece = Piece;
 
-},{"./shape":13,"../util/color":14,"../util":15}],12:[function(require,module,exports) {
+},{"./shape":13,"../util/color":14,"../util":15}],18:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var Keys;
-(function (Keys) {
-    Keys[Keys["SPACE"] = 32] = "SPACE";
-    Keys[Keys["UP"] = 38] = "UP";
-    Keys[Keys["DOWN"] = 40] = "DOWN";
-    Keys[Keys["LEFT"] = 37] = "LEFT";
-    Keys[Keys["RIGHT"] = 39] = "RIGHT";
-    Keys[Keys["A"] = 65] = "A";
-    Keys[Keys["D"] = 68] = "D";
-    Keys[Keys["Q"] = 81] = "Q";
-    Keys[Keys["S"] = 83] = "S";
-    Keys[Keys["W"] = 87] = "W";
-})(Keys = exports.Keys || (exports.Keys = {}));
+var GameEvent;
+(function (GameEvent) {
+    GameEvent[GameEvent["PAUSE"] = 0] = "PAUSE";
+    GameEvent[GameEvent["UNPAUSE"] = 1] = "UNPAUSE";
+    GameEvent[GameEvent["START"] = 2] = "START";
+    GameEvent[GameEvent["RESTART"] = 3] = "RESTART";
+    GameEvent[GameEvent["GAME_OVER"] = 4] = "GAME_OVER";
+    GameEvent[GameEvent["MOVE_LEFT"] = 5] = "MOVE_LEFT";
+    GameEvent[GameEvent["MOVE_RIGHT"] = 6] = "MOVE_RIGHT";
+    GameEvent[GameEvent["MOVE_DOWN"] = 7] = "MOVE_DOWN";
+    GameEvent[GameEvent["HARD_DOWN"] = 8] = "HARD_DOWN";
+    GameEvent[GameEvent["ROTATE"] = 9] = "ROTATE";
+})(GameEvent = exports.GameEvent || (exports.GameEvent = {}));
 
 },{}],11:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var shape_1 = require("./shape");
 var util_1 = require("../util");
 var color_1 = require("../util/color");
 var piece_1 = require("./piece");
-var keys_1 = require("../util/keys");
+var event_1 = require("./event");
 var Board = /** @class */ (function () {
     function Board(container, width, height, tileSize) {
         this.width = width;
@@ -491,22 +483,57 @@ var Board = /** @class */ (function () {
         }
         return numLines;
     };
-    Board.prototype.getInput = function (e) {
-        if (e.keyCode === keys_1.Keys.UP || e.keyCode === keys_1.Keys.W) {
-            this.activePiece.rotate(this.ctx, this.collides.bind(this));
+    /**
+     * Returns true if the piece is stuck and a new piece should be created
+     * @param event GameEvent
+     */
+    Board.prototype.handleEvent = function (event) {
+        switch (event) {
+            case event_1.GameEvent.MOVE_LEFT: {
+                if (!this.collides(this.activePiece, -1, 0, this.activePiece.shape)) {
+                    this.activePiece.left(this.ctx);
+                }
+                break;
+            }
+            case event_1.GameEvent.MOVE_RIGHT: {
+                if (!this.collides(this.activePiece, 1, 0, this.activePiece.shape)) {
+                    this.activePiece.right(this.ctx);
+                }
+                break;
+            }
+            case event_1.GameEvent.MOVE_DOWN: {
+                if (this.collides(this.activePiece, 0, 1, this.activePiece.shape)) {
+                    return true;
+                }
+                this.activePiece.down(this.ctx);
+                break;
+            }
+            case event_1.GameEvent.HARD_DOWN: {
+                var dy = 1;
+                while (!this.collides(this.activePiece, 0, dy, this.activePiece.shape)) {
+                    dy++;
+                }
+                this.activePiece.hardDown(this.ctx, dy);
+                break;
+            }
+            case event_1.GameEvent.ROTATE: {
+                var nextRotationIx = (this.activePiece.rotation + 1) % 4;
+                var nextRotation = shape_1.Shapes[this.activePiece.type][nextRotationIx];
+                var nudge = 0;
+                if (this.collides(this.activePiece, 0, 0, nextRotation)) {
+                    nudge = this.activePiece.col > this.width / 2 ? -1 : 1;
+                }
+                if (this.collides(this.activePiece, nudge, 0, nextRotation)) {
+                    break;
+                }
+                this.activePiece.rotate(this.ctx, nudge);
+                break;
+            }
+            default: {
+                return false;
+            }
         }
-        if (e.keyCode === keys_1.Keys.DOWN || e.keyCode === keys_1.Keys.S) {
-            this.activePiece.down(this.ctx, this.collides.bind(this), this.setOnBoard.bind(this));
-        }
-        if (e.keyCode === keys_1.Keys.LEFT || e.keyCode === keys_1.Keys.A) {
-            this.activePiece.left(this.ctx, this.collides.bind(this));
-        }
-        if (e.keyCode === keys_1.Keys.RIGHT || e.keyCode === keys_1.Keys.D) {
-            this.activePiece.right(this.ctx, this.collides.bind(this));
-        }
-        if (e.keyCode === keys_1.Keys.SPACE) {
-            this.activePiece.hardDown(this.ctx, this.collides.bind(this));
-        }
+        return false;
     };
     Board.prototype.reset = function () {
         this.grid = this.initGrid();
@@ -524,7 +551,14 @@ var Board = /** @class */ (function () {
         return rows;
     };
     Board.prototype.movePieceDown = function () {
-        return this.activePiece.down(this.ctx, this.collides.bind(this), this.setOnBoard.bind(this));
+        if (this.collides(this.activePiece, 0, 1, this.activePiece.shape)) {
+            return true;
+        }
+        this.activePiece.down(this.ctx);
+        return false;
+    };
+    Board.prototype.lockPiece = function () {
+        this.activePiece.set(this.setOnBoard.bind(this));
     };
     Board.prototype.setOnBoard = function (row, col, type) {
         this.grid[row][col] = type;
@@ -553,13 +587,31 @@ var Board = /** @class */ (function () {
 }());
 exports.Board = Board;
 
-},{"../util":15,"../util/color":14,"./piece":10,"../util/keys":12}],6:[function(require,module,exports) {
+},{"./shape":13,"../util":15,"../util/color":14,"./piece":10,"./event":18}],12:[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var Keys;
+(function (Keys) {
+    Keys[Keys["SPACE"] = 32] = "SPACE";
+    Keys[Keys["UP"] = 38] = "UP";
+    Keys[Keys["DOWN"] = 40] = "DOWN";
+    Keys[Keys["LEFT"] = 37] = "LEFT";
+    Keys[Keys["RIGHT"] = 39] = "RIGHT";
+    Keys[Keys["A"] = 65] = "A";
+    Keys[Keys["D"] = 68] = "D";
+    Keys[Keys["Q"] = 81] = "Q";
+    Keys[Keys["S"] = 83] = "S";
+    Keys[Keys["W"] = 87] = "W";
+})(Keys = exports.Keys || (exports.Keys = {}));
+
+},{}],6:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var board_1 = require("./model/board");
 var piece_1 = require("./model/piece");
 var keys_1 = require("./util/keys");
 var color_1 = require("./util/color");
+var event_1 = require("./model/event");
 var Tetris = /** @class */ (function () {
     function Tetris(container) {
         this.container = container;
@@ -567,7 +619,6 @@ var Tetris = /** @class */ (function () {
         this.height = 20;
         this.tileSize = 32;
         this.board = new board_1.Board(this.container, this.width, this.height, this.tileSize);
-        this.onDeck = null;
         this.nextPiece = piece_1.Piece.randomPiece(this.width, this.tileSize);
         this.levelEl = document.getElementById("level");
         this.linesEl = document.getElementById("lines");
@@ -576,146 +627,183 @@ var Tetris = /** @class */ (function () {
         this.nextPieceContainer.width = (4 * this.tileSize);
         this.nextPieceContainer.height = (4 * this.tileSize);
         this.paused = false;
-        this.gameOver = false;
         this.level = 0;
         this.lines = 0;
         this.score = 0;
-        this.raf = -1;
-        this.limit = 300;
-        this.lastFrameTimeMs = 0;
-        this.maxFPS = 60;
-        this.delta = 0;
-        this.timestep = 1000 / 60;
-        this.fps = 60;
-        this.framesThisSecond = 0;
-        this.lastFpsUpdate = 0;
-        this.gravity = 40;
+        this.queuedActions = [];
+        this.dt = 0;
+        this.step = 1.0;
+        this.needNewPiece = false;
     }
     Tetris.prototype.start = function () {
         this.getInput();
         this.board.activePiece = this.nextPiece;
         this.nextPiece = piece_1.Piece.randomPiece(this.width, this.tileSize);
         this.drawNextPiece(this.nextPiece);
-        this.raf = requestAnimationFrame(this.gameLoop.bind(this));
+        this.lastTick = performance.now();
+        requestAnimationFrame(this.loop.bind(this));
     };
     Tetris.prototype.getInput = function () {
         var _this = this;
-        function pause() {
-            this.paused = !this.paused;
-            if (this.paused) {
-                this.pauseGame();
-            }
-            else {
-                this.unpauseGame();
-            }
-        }
         document.body.addEventListener("keydown", function (e) {
-            _this.board.getInput(e);
-            if (e.keyCode === keys_1.Keys.Q) {
-                pause.call(_this);
+            switch (e.keyCode) {
+                case keys_1.Keys.A, keys_1.Keys.LEFT: {
+                    _this.queuedActions.push(event_1.GameEvent.MOVE_LEFT);
+                    break;
+                }
+                case keys_1.Keys.D, keys_1.Keys.RIGHT: {
+                    _this.queuedActions.push(event_1.GameEvent.MOVE_RIGHT);
+                    break;
+                }
+                case keys_1.Keys.W, keys_1.Keys.UP: {
+                    _this.queuedActions.push(event_1.GameEvent.ROTATE);
+                    break;
+                }
+                case keys_1.Keys.D, keys_1.Keys.DOWN: {
+                    _this.queuedActions.push(event_1.GameEvent.MOVE_DOWN);
+                    break;
+                }
+                case keys_1.Keys.SPACE: {
+                    _this.queuedActions.push(event_1.GameEvent.HARD_DOWN);
+                    break;
+                }
+                case keys_1.Keys.Q: {
+                    if (_this.paused) {
+                        _this.queuedActions.push(event_1.GameEvent.UNPAUSE);
+                    }
+                    else {
+                        _this.queuedActions.push(event_1.GameEvent.PAUSE);
+                    }
+                    break;
+                }
             }
         }, false);
         var pauseButton = document.getElementById("btn-pause");
         var restartButton = document.getElementById("btn-restart");
         var playAgainButton = document.getElementById("btn-playagain");
-        pauseButton.addEventListener("click", pause.bind(this));
-        restartButton.addEventListener("click", this.reset.bind(this));
-        playAgainButton.addEventListener("click", this.reset.bind(this));
-    };
-    Tetris.prototype.gameLoop = function (timestamp) {
-        if (this.gameOver)
-            this.end();
-        if (timestamp < this.lastFrameTimeMs + ((1000 / this.maxFPS) * this.gravity)) {
-            this.raf = requestAnimationFrame(this.gameLoop.bind(this));
-            return;
-        }
-        this.delta += timestamp - this.lastFrameTimeMs;
-        this.lastFrameTimeMs = timestamp;
-        if (timestamp > this.lastFpsUpdate + 1000) {
-            this.fps = 0.25 * this.framesThisSecond + 0.75 * this.fps;
-            this.lastFpsUpdate = timestamp;
-            this.framesThisSecond = 0;
-        }
-        this.framesThisSecond++;
-        var numUpdateSteps = 0;
-        while (this.delta >= this.timestep) {
-            this.update();
-            this.delta -= this.timestep;
-            if (++numUpdateSteps >= 240) {
-                break;
+        pauseButton.addEventListener("click", function (e) {
+            if (_this.paused) {
+                _this.queuedActions.push(event_1.GameEvent.PAUSE);
             }
-        }
+            else {
+                _this.queuedActions.push(event_1.GameEvent.UNPAUSE);
+            }
+        }, false);
+        restartButton.addEventListener("click", function (e) {
+            _this.queuedActions.push(event_1.GameEvent.RESTART);
+        }, false);
+        playAgainButton.addEventListener("click", function (e) {
+            _this.queuedActions.push(event_1.GameEvent.RESTART);
+        });
+    };
+    Tetris.prototype.loop = function (time) {
+        var now = performance.now();
+        this.update((now - this.lastTick) / 1000.0);
         this.draw();
-        this.raf = requestAnimationFrame(this.gameLoop.bind(this));
+        this.lastTick = now;
+        requestAnimationFrame(this.loop.bind(this));
     };
     Tetris.prototype.draw = function () {
-        if (this.onDeck) {
-            this.drawNextPiece(this.onDeck);
-        }
         this.board.draw();
-        var newPiece = this.board.movePieceDown();
-        if (newPiece === true) {
-            this.gameOver = true;
-            this.paused = true;
-        }
-        if (newPiece instanceof piece_1.Piece) {
-            this.onDeck = newPiece;
-        }
+        this.drawNextPiece(this.nextPiece);
     };
-    Tetris.prototype.update = function () {
+    Tetris.prototype.update = function (ticks) {
+        var e = this.queuedActions.shift();
+        if (e !== undefined)
+            this.handleEvent(e);
+        if (this.paused)
+            return;
+        this.dt += ticks;
+        if (this.dt > this.step) {
+            this.dt -= this.step;
+            this.needNewPiece = this.board.movePieceDown();
+        }
+        if (this.needNewPiece) {
+            if (this.board.activePiece.isAtTop()) {
+                this.queuedActions = Array.of(event_1.GameEvent.GAME_OVER);
+                return;
+            }
+            this.needNewPiece = false;
+            this.board.lockPiece();
+            this.board.activePiece = this.nextPiece;
+            this.nextPiece = piece_1.Piece.randomPiece(this.width, this.tileSize);
+        }
         var linesCleared = this.board.clearLines();
         this.lines += linesCleared;
         this.linesEl.textContent = "" + this.lines;
         this.score += this.getScoreForLines(linesCleared);
         this.scoreEl.textContent = "" + this.score;
-        if (this.shouldIncreaseLevel()) {
-            this.level++;
-            this.gravity = this.gravity - 4;
-            this.updateBackground();
+        // if (this.shouldIncreaseLevel()) {
+        //   this.level++
+        //   this.gravity = this.gravity - 4
+        //   this.updateBackground()
+        // }
+        // this.levelEl.textContent = `${this.level}`
+    };
+    Tetris.prototype.handleEvent = function (event) {
+        switch (event) {
+            case event_1.GameEvent.HARD_DOWN:
+            case event_1.GameEvent.MOVE_DOWN:
+            case event_1.GameEvent.MOVE_LEFT:
+            case event_1.GameEvent.MOVE_RIGHT:
+            case event_1.GameEvent.ROTATE: {
+                this.board.handleEvent(event);
+                break;
+            }
+            case event_1.GameEvent.PAUSE: {
+                this.pauseGame();
+                break;
+            }
+            case event_1.GameEvent.UNPAUSE: {
+                this.unpauseGame();
+                break;
+            }
+            case event_1.GameEvent.RESTART: {
+                this.reset();
+                break;
+            }
+            case event_1.GameEvent.GAME_OVER: {
+                this.gameOver();
+                break;
+            }
         }
-        this.levelEl.textContent = "" + this.level;
     };
     Tetris.prototype.drawNextPiece = function (toDraw) {
         var ctx = this.nextPieceContainer.getContext('2d');
-        this.board.activePiece = this.nextPiece;
         this.nextPiece.clearNextPiece(ctx);
-        this.nextPiece = toDraw;
-        this.onDeck = null;
         this.nextPiece.drawNextPiece(ctx);
     };
     Tetris.prototype.updateBackground = function () {
         document.body.style.backgroundColor = color_1.Backgrounds[this.level];
     };
     Tetris.prototype.pauseGame = function () {
-        cancelAnimationFrame(this.raf);
+        this.paused = true;
         var overlay = document.getElementById("pause-overlay");
         if (overlay)
             overlay.style.display = "block";
     };
     Tetris.prototype.unpauseGame = function () {
+        this.paused = false;
         var overlay = document.getElementById("pause-overlay");
         if (overlay)
             overlay.style.display = "none";
-        this.raf = requestAnimationFrame(this.gameLoop.bind(this));
+        requestAnimationFrame(this.loop.bind(this));
     };
-    Tetris.prototype.end = function () {
+    Tetris.prototype.gameOver = function () {
         var overlay = document.getElementById("overlay");
         if (overlay)
             overlay.style.display = "block";
     };
-    Tetris.prototype.reset = function (e) {
-        cancelAnimationFrame(this.raf);
+    Tetris.prototype.reset = function () {
         var overlay = document.getElementById("overlay");
         if (overlay)
             overlay.style.display = "none";
-        this.gameOver = false;
         this.lines = 0;
         this.score = 0;
         this.level = 0;
-        this.gravity = 40;
         this.board.reset();
         this.updateBackground();
-        this.raf = requestAnimationFrame(this.gameLoop.bind(this));
+        requestAnimationFrame(this.loop.bind(this));
     };
     // NES scoring
     Tetris.prototype.getScoreForLines = function (lines) {
@@ -733,7 +821,7 @@ var container = document.getElementById("game");
 var game = new Tetris(container);
 game.start();
 
-},{"./model/board":11,"./model/piece":10,"./util/keys":12,"./util/color":14}],16:[function(require,module,exports) {
+},{"./model/board":11,"./model/piece":10,"./util/keys":12,"./util/color":14,"./model/event":18}],16:[function(require,module,exports) {
 
 var global = (1, eval)('this');
 var OldModule = module.bundle.Module;
