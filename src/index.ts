@@ -5,6 +5,7 @@ import { Keys } from './util/keys'
 import { Backgrounds } from './util/color'
 import { Shapes } from './model/shape'
 import { GameEvent } from './model/event'
+import { clearNextPiece, drawNextPiece } from './util'
 
 class Tetris {
   width: number
@@ -34,7 +35,7 @@ class Tetris {
     this.nextPiece = Piece.randomPiece(this.width, this.tileSize)
     this.nextPieceContainer = document.getElementById("nextpiece") as HTMLCanvasElement
     this.nextPieceContainer.width = (4 * this.tileSize)
-    this.nextPieceContainer.height = (4 * this.tileSize)
+    this.nextPieceContainer.height = (3 * this.tileSize)
     this.paused = false
     this.level = 0
     this.lines = 0
@@ -192,8 +193,8 @@ class Tetris {
    */
   private drawNextPiece(toDraw: Piece) {
     const ctx = this.nextPieceContainer.getContext('2d') as CanvasRenderingContext2D
-    this.nextPiece.clearNextPiece(ctx)
-    this.nextPiece.drawNextPiece(ctx)
+    clearNextPiece(ctx, this.nextPiece)
+    drawNextPiece(ctx, this.nextPiece)
   }
 
   /**

@@ -6,10 +6,6 @@
     <link rel="stylesheet" href="style.css"></link>
   </head>
   <body class="container">
-    <header class="header">
-      <h1>Tetri-TS</h1>
-      <p>Tetris in TypeScript</p>
-    </header>
     <canvas id="game"></canvas>
     <div id="overlay">
       <h2>Game Over!</h2>
@@ -18,24 +14,24 @@
     <div id="pause-overlay">
       <h2>Game Paused</h2>
     </div>
-    <aside class="next-piece">
+    <aside class="box next-piece">
       <canvas id="nextpiece"></canvas>
     </aside>
-    <aside class="scoring">
-      <div class="box">
+    <aside class="box scoring">
+      <div class="row">
         <span>Level</span>
         <span id="level">1</span>
       </div>
-      <div class="box">
+      <div class="row">
         <span>Score</span>
         <span id="score">0</span>
       </div>
-      <div class="box">
+      <div class="row">
         <span>Lines</span>
         <span id="lines">0</span>
       </div>
     </aside>
-    <aside class="options">
+    <aside class="box options">
       <span id="btn-pause" class="btn">Pause</span>
       <span id="btn-restart" class="btn">Restart</span>
     </aside>

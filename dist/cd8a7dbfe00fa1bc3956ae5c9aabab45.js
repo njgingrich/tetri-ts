@@ -69,7 +69,7 @@ require = (function (modules, cache, entry) {
 
   // Override the current require with this new one
   return newRequire;
-})({13:[function(require,module,exports) {
+})({10:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TetrominoType;
@@ -248,28 +248,7 @@ exports.Shapes = (_a = {},
     _a);
 var _a;
 
-},{}],15:[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-function addClass(node, classes) {
-    if (node.className) {
-        node.className += " " + classes;
-    }
-    else {
-        node.className = classes;
-    }
-}
-exports.addClass = addClass;
-function drawSquare(x, y, ctx, size) {
-    ctx.fillRect(x * size, y * size, size, size);
-    var ss = ctx.strokeStyle;
-    ctx.strokeStyle = "#222222";
-    ctx.strokeRect(x * size, y * size, size, size);
-    ctx.strokeStyle = ss;
-}
-exports.drawSquare = drawSquare;
-
-},{}],14:[function(require,module,exports) {
+},{}],8:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Colors;
@@ -296,7 +275,52 @@ exports.Backgrounds = [
     "#340770",
 ];
 
-},{}],10:[function(require,module,exports) {
+},{}],11:[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var color_1 = require("./color");
+function addClass(node, classes) {
+    if (node.className) {
+        node.className += " " + classes;
+    }
+    else {
+        node.className = classes;
+    }
+}
+exports.addClass = addClass;
+function drawSquare(x, y, ctx, size) {
+    ctx.fillRect(x * size, y * size, size, size);
+    var ss = ctx.strokeStyle;
+    ctx.strokeStyle = "#222222";
+    ctx.strokeRect(x * size, y * size, size, size);
+    ctx.strokeStyle = ss;
+}
+exports.drawSquare = drawSquare;
+function clearNextPiece(ctx, p) {
+    for (var r = 0; r < 3; r++) {
+        for (var c = 0; c < 4; c++) {
+            ctx.fillStyle = "white";
+            ctx.fillRect(c * p.size, r * p.size, p.size, p.size);
+        }
+    }
+}
+exports.clearNextPiece = clearNextPiece;
+function drawNextPiece(ctx, p) {
+    var fillStyle = color_1.Colors[p.type];
+    for (var r = 0; r < 3; r++) {
+        for (var c = 0; c < 4; c++) {
+            if (p.shape[r] && p.shape[r][c]) {
+                if (p.shape[r][c] > 0) {
+                    ctx.fillStyle = fillStyle;
+                    drawSquare(c, r, ctx, p.size);
+                }
+            }
+        }
+    }
+}
+exports.drawNextPiece = drawNextPiece;
+
+},{"./color":8}],6:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var shape_1 = require("./shape");
@@ -315,12 +339,6 @@ var Piece = /** @class */ (function () {
     }
     Piece.prototype.draw = function (ctx) {
         this.fill(ctx, color_1.Colors[this.type]);
-    };
-    Piece.prototype.clearNextPiece = function (ctx) {
-        this.fillNextPiece(ctx, "white");
-    };
-    Piece.prototype.drawNextPiece = function (ctx) {
-        this.fillNextPiece(ctx, color_1.Colors[this.type]);
     };
     Piece.prototype.left = function (ctx) {
         this.clear(ctx);
@@ -398,27 +416,11 @@ var Piece = /** @class */ (function () {
     Piece.prototype.clear = function (ctx) {
         this.fill(ctx, "white");
     };
-    Piece.prototype.fillNextPiece = function (ctx, fillstyle) {
-        for (var r = 0; r < 4; r++) {
-            for (var c = 0; c < 4; c++) {
-                if (this.shape[r] && this.shape[r][c]) {
-                    if (this.shape[r][c] > 0) {
-                        ctx.fillStyle = fillstyle;
-                        util_1.drawSquare(c, r, ctx, this.size);
-                    }
-                }
-                else {
-                    ctx.fillStyle = "white";
-                    util_1.drawSquare(c, r, ctx, this.size);
-                }
-            }
-        }
-    };
     return Piece;
 }());
 exports.Piece = Piece;
 
-},{"./shape":13,"../util/color":14,"../util":15}],18:[function(require,module,exports) {
+},{"./shape":10,"../util/color":8,"../util":11}],9:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var GameEvent;
@@ -435,7 +437,7 @@ var GameEvent;
     GameEvent[GameEvent["ROTATE"] = 9] = "ROTATE";
 })(GameEvent = exports.GameEvent || (exports.GameEvent = {}));
 
-},{}],11:[function(require,module,exports) {
+},{}],5:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var shape_1 = require("./shape");
@@ -587,7 +589,7 @@ var Board = /** @class */ (function () {
 }());
 exports.Board = Board;
 
-},{"./shape":13,"../util":15,"../util/color":14,"./piece":10,"./event":18}],12:[function(require,module,exports) {
+},{"./shape":10,"../util":11,"../util/color":8,"./piece":6,"./event":9}],7:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Keys;
@@ -604,7 +606,7 @@ var Keys;
     Keys[Keys["W"] = 87] = "W";
 })(Keys = exports.Keys || (exports.Keys = {}));
 
-},{}],6:[function(require,module,exports) {
+},{}],3:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var board_1 = require("./model/board");
@@ -612,6 +614,7 @@ var piece_1 = require("./model/piece");
 var keys_1 = require("./util/keys");
 var color_1 = require("./util/color");
 var event_1 = require("./model/event");
+var util_1 = require("./util");
 var Tetris = /** @class */ (function () {
     function Tetris(container) {
         this.container = container;
@@ -622,7 +625,7 @@ var Tetris = /** @class */ (function () {
         this.nextPiece = piece_1.Piece.randomPiece(this.width, this.tileSize);
         this.nextPieceContainer = document.getElementById("nextpiece");
         this.nextPieceContainer.width = (4 * this.tileSize);
-        this.nextPieceContainer.height = (4 * this.tileSize);
+        this.nextPieceContainer.height = (3 * this.tileSize);
         this.paused = false;
         this.level = 0;
         this.lines = 0;
@@ -769,8 +772,8 @@ var Tetris = /** @class */ (function () {
      */
     Tetris.prototype.drawNextPiece = function (toDraw) {
         var ctx = this.nextPieceContainer.getContext('2d');
-        this.nextPiece.clearNextPiece(ctx);
-        this.nextPiece.drawNextPiece(ctx);
+        util_1.clearNextPiece(ctx, this.nextPiece);
+        util_1.drawNextPiece(ctx, this.nextPiece);
     };
     /**
      * Change the background to reflect the current level of the game.
@@ -871,7 +874,7 @@ var container = document.getElementById("game");
 var game = new Tetris(container);
 game.start();
 
-},{"./model/board":11,"./model/piece":10,"./util/keys":12,"./util/color":14,"./model/event":18}],16:[function(require,module,exports) {
+},{"./model/board":5,"./model/piece":6,"./util/keys":7,"./util/color":8,"./model/event":9,"./util":11}],17:[function(require,module,exports) {
 
 var global = (1, eval)('this');
 var OldModule = module.bundle.Module;
@@ -891,7 +894,7 @@ module.bundle.Module = Module;
 
 if (!module.bundle.parent && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
-  var ws = new WebSocket('ws://' + hostname + ':' + '46583' + '/');
+  var ws = new WebSocket('ws://' + hostname + ':' + '36757' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
@@ -992,5 +995,5 @@ function hmrAccept(bundle, id) {
     return hmrAccept(global.require, id);
   });
 }
-},{}]},{},[16,6])
+},{}]},{},[17,3])
 //# sourceMappingURL=/dist/cd8a7dbfe00fa1bc3956ae5c9aabab45.map
