@@ -69,7 +69,7 @@ require = (function (modules, cache, entry) {
 
   // Override the current require with this new one
   return newRequire;
-})({10:[function(require,module,exports) {
+})({13:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TetrominoType;
@@ -248,7 +248,7 @@ exports.Shapes = (_a = {},
     _a);
 var _a;
 
-},{}],8:[function(require,module,exports) {
+},{}],10:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Colors;
@@ -275,7 +275,7 @@ exports.Backgrounds = [
     "#340770",
 ];
 
-},{}],11:[function(require,module,exports) {
+},{}],14:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var color_1 = require("./color");
@@ -320,7 +320,7 @@ function drawNextPiece(ctx, p) {
 }
 exports.drawNextPiece = drawNextPiece;
 
-},{"./color":8}],6:[function(require,module,exports) {
+},{"./color":10}],8:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var shape_1 = require("./shape");
@@ -420,7 +420,7 @@ var Piece = /** @class */ (function () {
 }());
 exports.Piece = Piece;
 
-},{"./shape":10,"../util/color":8,"../util":11}],9:[function(require,module,exports) {
+},{"./shape":13,"../util/color":10,"../util":14}],11:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var GameEvent;
@@ -435,9 +435,11 @@ var GameEvent;
     GameEvent[GameEvent["MOVE_DOWN"] = 7] = "MOVE_DOWN";
     GameEvent[GameEvent["HARD_DOWN"] = 8] = "HARD_DOWN";
     GameEvent[GameEvent["ROTATE"] = 9] = "ROTATE";
+    GameEvent[GameEvent["AUDIO_STOP"] = 10] = "AUDIO_STOP";
+    GameEvent[GameEvent["AUDIO_START"] = 11] = "AUDIO_START";
 })(GameEvent = exports.GameEvent || (exports.GameEvent = {}));
 
-},{}],5:[function(require,module,exports) {
+},{}],7:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var shape_1 = require("./shape");
@@ -589,7 +591,7 @@ var Board = /** @class */ (function () {
 }());
 exports.Board = Board;
 
-},{"./shape":10,"../util":11,"../util/color":8,"./piece":6,"./event":9}],7:[function(require,module,exports) {
+},{"./shape":13,"../util":14,"../util/color":10,"./piece":8,"./event":11}],9:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Keys;
@@ -606,7 +608,7 @@ var Keys;
     Keys[Keys["W"] = 87] = "W";
 })(Keys = exports.Keys || (exports.Keys = {}));
 
-},{}],3:[function(require,module,exports) {
+},{}],4:[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var board_1 = require("./model/board");
@@ -627,6 +629,7 @@ var Tetris = /** @class */ (function () {
         this.nextPieceContainer.width = (4 * this.tileSize);
         this.nextPieceContainer.height = (3 * this.tileSize);
         this.paused = false;
+        this.audioPlaying = true;
         this.level = 0;
         this.lines = 0;
         this.score = 0;
@@ -678,9 +681,17 @@ var Tetris = /** @class */ (function () {
                 }
             }
         }, false);
+        var audioMutedButton = document.getElementById("btn-audio-muted");
+        var audioPlayingButton = document.getElementById("btn-audio-playing");
         var pauseButton = document.getElementById("btn-pause");
         var restartButton = document.getElementById("btn-restart");
         var playAgainButton = document.getElementById("btn-playagain");
+        audioMutedButton.addEventListener("click", function (e) {
+            _this.queuedActions.push(event_1.GameEvent.AUDIO_START);
+        });
+        audioPlayingButton.addEventListener("click", function (e) {
+            _this.queuedActions.push(event_1.GameEvent.AUDIO_STOP);
+        });
         pauseButton.addEventListener("click", function (e) {
             if (_this.paused) {
                 _this.queuedActions.push(event_1.GameEvent.PAUSE);
@@ -754,6 +765,16 @@ var Tetris = /** @class */ (function () {
             }
             case event_1.GameEvent.UNPAUSE: {
                 this.unpauseGame();
+                break;
+            }
+            case event_1.GameEvent.AUDIO_START: {
+                this.audioPlaying = true;
+                this.switchAudioButton();
+                break;
+            }
+            case event_1.GameEvent.AUDIO_STOP: {
+                this.audioPlaying = false;
+                this.switchAudioButton();
                 break;
             }
             case event_1.GameEvent.RESTART: {
@@ -845,6 +866,18 @@ var Tetris = /** @class */ (function () {
         this.updateBackground();
         requestAnimationFrame(this.loop.bind(this));
     };
+    Tetris.prototype.switchAudioButton = function () {
+        var audioMutedButton = document.getElementById("btn-audio-muted");
+        var audioPlayingButton = document.getElementById("btn-audio-playing");
+        if (this.audioPlaying) {
+            audioPlayingButton.style.display = "inline-block";
+            audioMutedButton.style.display = "none";
+        }
+        else {
+            audioPlayingButton.style.display = "none";
+            audioMutedButton.style.display = "inline-block";
+        }
+    };
     /**
      * Determine the score for the number of lines cleared.
      * 1 line: 40 * (level + 1)
@@ -874,7 +907,7 @@ var container = document.getElementById("game");
 var game = new Tetris(container);
 game.start();
 
-},{"./model/board":5,"./model/piece":6,"./util/keys":7,"./util/color":8,"./model/event":9,"./util":11}],17:[function(require,module,exports) {
+},{"./model/board":7,"./model/piece":8,"./util/keys":9,"./util/color":10,"./model/event":11,"./util":14}],20:[function(require,module,exports) {
 
 var global = (1, eval)('this');
 var OldModule = module.bundle.Module;
@@ -894,7 +927,7 @@ module.bundle.Module = Module;
 
 if (!module.bundle.parent && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
-  var ws = new WebSocket('ws://' + hostname + ':' + '36757' + '/');
+  var ws = new WebSocket('ws://' + hostname + ':' + '40997' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
@@ -995,5 +1028,5 @@ function hmrAccept(bundle, id) {
     return hmrAccept(global.require, id);
   });
 }
-},{}]},{},[17,3])
+},{}]},{},[20,4])
 //# sourceMappingURL=/dist/cd8a7dbfe00fa1bc3956ae5c9aabab45.map

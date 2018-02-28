@@ -18,6 +18,7 @@ class Tetris {
   queuedActions: GameEvent[]
   needNewPiece: boolean
 
+  audioPlaying: boolean
   paused: boolean
   level: number
   lines: number
@@ -37,6 +38,7 @@ class Tetris {
     this.nextPieceContainer.width = (4 * this.tileSize)
     this.nextPieceContainer.height = (3 * this.tileSize)
     this.paused = false
+    this.audioPlaying = true
     this.level = 0
     this.lines = 0
     this.score = 0
@@ -90,10 +92,18 @@ class Tetris {
       }
     }, false)
 
+    const audioMutedButton = document.getElementById("btn-audio-muted") as HTMLImageElement
+    const audioPlayingButton = document.getElementById("btn-audio-playing") as HTMLImageElement
     const pauseButton = document.getElementById("btn-pause") as HTMLElement
     const restartButton = document.getElementById("btn-restart") as HTMLElement
     const playAgainButton = document.getElementById("btn-playagain") as HTMLElement
 
+    audioMutedButton.addEventListener("click", (e) => {
+      this.queuedActions.push(GameEvent.AUDIO_START)
+    })
+    audioPlayingButton.addEventListener("click", (e) => {
+      this.queuedActions.push(GameEvent.AUDIO_STOP)
+    })
     pauseButton.addEventListener("click", (e) => {
       if (this.paused) {
         this.queuedActions.push(GameEvent.PAUSE)
@@ -174,6 +184,16 @@ class Tetris {
       }
       case GameEvent.UNPAUSE: {
         this.unpauseGame()
+        break
+      }
+      case GameEvent.AUDIO_START: {
+        this.audioPlaying = true
+        this.switchAudioButton()
+        break
+      }
+      case GameEvent.AUDIO_STOP: {
+        this.audioPlaying = false
+        this.switchAudioButton()
         break
       }
       case GameEvent.RESTART: {
@@ -272,6 +292,18 @@ class Tetris {
     this.board.reset()
     this.updateBackground()
     requestAnimationFrame(this.loop.bind(this))
+  }
+
+  private switchAudioButton() {
+    const audioMutedButton = document.getElementById("btn-audio-muted") as HTMLImageElement
+    const audioPlayingButton = document.getElementById("btn-audio-playing") as HTMLImageElement
+    if (this.audioPlaying) {
+      audioPlayingButton.style.display = "inline-block"
+      audioMutedButton.style.display = "none"
+    } else {
+      audioPlayingButton.style.display = "none"
+      audioMutedButton.style.display = "inline-block"
+    }
   }
 
   /**

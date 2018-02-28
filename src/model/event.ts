@@ -9,4 +9,6 @@ export enum GameEvent {
   MOVE_DOWN,
   HARD_DOWN,
   ROTATE,
+  AUDIO_STOP,
+  AUDIO_START,
 }
