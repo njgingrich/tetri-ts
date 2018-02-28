@@ -13,6 +13,7 @@ class Tetris {
   tileSize: number
   nextPiece: Piece
   container: HTMLCanvasElement
+  music: HTMLAudioElement
   nextPieceContainer: HTMLCanvasElement
   board: Board
   queuedActions: GameEvent[]
@@ -39,6 +40,7 @@ class Tetris {
     this.nextPieceContainer = document.getElementById("nextpiece") as HTMLCanvasElement
     this.nextPieceContainer.width = (4 * this.tileSize)
     this.nextPieceContainer.height = (3 * this.tileSize)
+    this.music = document.getElementById("music") as HTMLAudioElement
     this.running = true
     this.paused = false
     this.shouldStep = false
@@ -53,49 +55,24 @@ class Tetris {
   }
 
   public start() {
-    this.getInput()
+    this.createListeners()
     this.board.activePiece = this.nextPiece
     this.nextPiece = Piece.randomPiece(this.width, this.tileSize)
     this.drawNextPiece(this.nextPiece)
+    this.music.play()
+    this.music.loop = true
+    this.music.volume = 0.3
 
     this.lastTick = performance.now()
     requestAnimationFrame(this.loop.bind(this))
   }
 
-  private getInput() {
-    document.body.addEventListener("keydown", (e) => {
-      switch (e.keyCode) {
-        case Keys.A, Keys.LEFT: {
-          this.queuedActions.push(GameEvent.MOVE_LEFT)
-          break
-        }
-        case Keys.D, Keys.RIGHT: {
-          this.queuedActions.push(GameEvent.MOVE_RIGHT)
-          break
-        }
-        case Keys.W, Keys.UP: {
-          this.queuedActions.push(GameEvent.ROTATE)
-          break
-        }
-        case Keys.D, Keys.DOWN: {
-          this.queuedActions.push(GameEvent.MOVE_DOWN)
-          break
-        }
-        case Keys.SPACE: {
-          this.queuedActions.push(GameEvent.HARD_DOWN)
-          break
-        }
-        case Keys.Q: {
-          if (!this.running) return
-          if (this.paused) {
-            this.queuedActions.push(GameEvent.UNPAUSE)
-          } else {
-            this.queuedActions.push(GameEvent.PAUSE)
-          }
-          break
-        }
-      }
-    }, false)
+  /**
+   * Set up the game to track key/event input and map them to the appropriate
+   * listeners/events.
+   */
+  private createListeners() {
+    document.body.addEventListener("keydown", this.getInput.bind(this), false)
 
     const audioMutedButton = document.getElementById("btn-audio-muted") as HTMLImageElement
     const audioPlayingButton = document.getElementById("btn-audio-playing") as HTMLImageElement
@@ -125,6 +102,50 @@ class Tetris {
     })
   }
 
+  /**
+   * Push actions to queue based on key input.
+   *
+   * @param e The keyboard event to switch on.
+   */
+  private getInput(e: KeyboardEvent) {
+    switch (e.keyCode) {
+      case Keys.A, Keys.LEFT: {
+        this.queuedActions.push(GameEvent.MOVE_LEFT)
+        break
+      }
+      case Keys.D, Keys.RIGHT: {
+        this.queuedActions.push(GameEvent.MOVE_RIGHT)
+        break
+      }
+      case Keys.W, Keys.UP: {
+        this.queuedActions.push(GameEvent.ROTATE)
+        break
+      }
+      case Keys.D, Keys.DOWN: {
+        this.queuedActions.push(GameEvent.MOVE_DOWN)
+        break
+      }
+      case Keys.SPACE: {
+        this.queuedActions.push(GameEvent.HARD_DOWN)
+        break
+      }
+      case Keys.Q: {
+        if (!this.running) return
+        if (this.paused) {
+          this.queuedActions.push(GameEvent.UNPAUSE)
+        } else {
+          this.queuedActions.push(GameEvent.PAUSE)
+        }
+        break
+      }
+    }
+  }
+
+  /**
+   * The main game loop.
+   *
+   * @param time The timestamp of the last loop.
+   */
   private loop(time: any) {
     const now = performance.now()
     this.update((now - this.lastTick) / 1000.0)
@@ -133,11 +154,20 @@ class Tetris {
     requestAnimationFrame(this.loop.bind(this))
   }
 
+  /**
+   * Draw the board and the next piece indicator.
+   */
   private draw() {
     this.board.draw()
     this.drawNextPiece(this.nextPiece)
   }
 
+  /**
+   * Move piece if enough ticks have passed, draw the piece onto the
+   * board if it's locked, clear the board of filled lines, and check game over.
+   *
+   * @param ticks The number of ticks
+   */
   private update(ticks: number) {
     this.handleNextEvent()
 
@@ -319,9 +349,11 @@ class Tetris {
     const audioMutedButton = document.getElementById("btn-audio-muted") as HTMLImageElement
     const audioPlayingButton = document.getElementById("btn-audio-playing") as HTMLImageElement
     if (this.audioPlaying) {
+      this.music.play()
       audioPlayingButton.style.display = "inline-block"
       audioMutedButton.style.display = "none"
     } else {
+      this.music.pause()
       audioPlayingButton.style.display = "none"
       audioMutedButton.style.display = "inline-block"
     }

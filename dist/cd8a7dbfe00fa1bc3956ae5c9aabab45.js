@@ -628,6 +628,7 @@ var Tetris = /** @class */ (function () {
         this.nextPieceContainer = document.getElementById("nextpiece");
         this.nextPieceContainer.width = (4 * this.tileSize);
         this.nextPieceContainer.height = (3 * this.tileSize);
+        this.music = document.getElementById("music");
         this.running = true;
         this.paused = false;
         this.shouldStep = false;
@@ -641,50 +642,23 @@ var Tetris = /** @class */ (function () {
         this.needNewPiece = false;
     }
     Tetris.prototype.start = function () {
-        this.getInput();
+        this.createListeners();
         this.board.activePiece = this.nextPiece;
         this.nextPiece = piece_1.Piece.randomPiece(this.width, this.tileSize);
         this.drawNextPiece(this.nextPiece);
+        this.music.play();
+        this.music.loop = true;
+        this.music.volume = 0.3;
         this.lastTick = performance.now();
         requestAnimationFrame(this.loop.bind(this));
     };
-    Tetris.prototype.getInput = function () {
+    /**
+     * Set up the game to track key/event input and map them to the appropriate
+     * listeners/events.
+     */
+    Tetris.prototype.createListeners = function () {
         var _this = this;
-        document.body.addEventListener("keydown", function (e) {
-            switch (e.keyCode) {
-                case keys_1.Keys.A, keys_1.Keys.LEFT: {
-                    _this.queuedActions.push(event_1.GameEvent.MOVE_LEFT);
-                    break;
-                }
-                case keys_1.Keys.D, keys_1.Keys.RIGHT: {
-                    _this.queuedActions.push(event_1.GameEvent.MOVE_RIGHT);
-                    break;
-                }
-                case keys_1.Keys.W, keys_1.Keys.UP: {
-                    _this.queuedActions.push(event_1.GameEvent.ROTATE);
-                    break;
-                }
-                case keys_1.Keys.D, keys_1.Keys.DOWN: {
-                    _this.queuedActions.push(event_1.GameEvent.MOVE_DOWN);
-                    break;
-                }
-                case keys_1.Keys.SPACE: {
-                    _this.queuedActions.push(event_1.GameEvent.HARD_DOWN);
-                    break;
-                }
-                case keys_1.Keys.Q: {
-                    if (!_this.running)
-                        return;
-                    if (_this.paused) {
-                        _this.queuedActions.push(event_1.GameEvent.UNPAUSE);
-                    }
-                    else {
-                        _this.queuedActions.push(event_1.GameEvent.PAUSE);
-                    }
-                    break;
-                }
-            }
-        }, false);
+        document.body.addEventListener("keydown", this.getInput.bind(this), false);
         var audioMutedButton = document.getElementById("btn-audio-muted");
         var audioPlayingButton = document.getElementById("btn-audio-playing");
         var pauseButton = document.getElementById("btn-pause");
@@ -713,6 +687,51 @@ var Tetris = /** @class */ (function () {
             _this.queuedActions.push(event_1.GameEvent.RESTART);
         });
     };
+    /**
+     * Push actions to queue based on key input.
+     *
+     * @param e The keyboard event to switch on.
+     */
+    Tetris.prototype.getInput = function (e) {
+        switch (e.keyCode) {
+            case keys_1.Keys.A, keys_1.Keys.LEFT: {
+                this.queuedActions.push(event_1.GameEvent.MOVE_LEFT);
+                break;
+            }
+            case keys_1.Keys.D, keys_1.Keys.RIGHT: {
+                this.queuedActions.push(event_1.GameEvent.MOVE_RIGHT);
+                break;
+            }
+            case keys_1.Keys.W, keys_1.Keys.UP: {
+                this.queuedActions.push(event_1.GameEvent.ROTATE);
+                break;
+            }
+            case keys_1.Keys.D, keys_1.Keys.DOWN: {
+                this.queuedActions.push(event_1.GameEvent.MOVE_DOWN);
+                break;
+            }
+            case keys_1.Keys.SPACE: {
+                this.queuedActions.push(event_1.GameEvent.HARD_DOWN);
+                break;
+            }
+            case keys_1.Keys.Q: {
+                if (!this.running)
+                    return;
+                if (this.paused) {
+                    this.queuedActions.push(event_1.GameEvent.UNPAUSE);
+                }
+                else {
+                    this.queuedActions.push(event_1.GameEvent.PAUSE);
+                }
+                break;
+            }
+        }
+    };
+    /**
+     * The main game loop.
+     *
+     * @param time The timestamp of the last loop.
+     */
     Tetris.prototype.loop = function (time) {
         var now = performance.now();
         this.update((now - this.lastTick) / 1000.0);
@@ -720,10 +739,19 @@ var Tetris = /** @class */ (function () {
         this.lastTick = now;
         requestAnimationFrame(this.loop.bind(this));
     };
+    /**
+     * Draw the board and the next piece indicator.
+     */
     Tetris.prototype.draw = function () {
         this.board.draw();
         this.drawNextPiece(this.nextPiece);
     };
+    /**
+     * Move piece if enough ticks have passed, draw the piece onto the
+     * board if it's locked, clear the board of filled lines, and check game over.
+     *
+     * @param ticks The number of ticks
+     */
     Tetris.prototype.update = function (ticks) {
         this.handleNextEvent();
         if (this.paused)
@@ -892,10 +920,12 @@ var Tetris = /** @class */ (function () {
         var audioMutedButton = document.getElementById("btn-audio-muted");
         var audioPlayingButton = document.getElementById("btn-audio-playing");
         if (this.audioPlaying) {
+            this.music.play();
             audioPlayingButton.style.display = "inline-block";
             audioMutedButton.style.display = "none";
         }
         else {
+            this.music.pause();
             audioPlayingButton.style.display = "none";
             audioMutedButton.style.display = "inline-block";
         }
@@ -929,7 +959,7 @@ var container = document.getElementById("game");
 var game = new Tetris(container);
 game.start();
 
-},{"./model/board":7,"./model/piece":8,"./util/keys":9,"./util/color":10,"./model/event":11,"./util":14}],22:[function(require,module,exports) {
+},{"./model/board":7,"./model/piece":8,"./util/keys":9,"./util/color":10,"./model/event":11,"./util":14}],24:[function(require,module,exports) {
 
 var global = (1, eval)('this');
 var OldModule = module.bundle.Module;
@@ -1050,5 +1080,5 @@ function hmrAccept(bundle, id) {
     return hmrAccept(global.require, id);
   });
 }
-},{}]},{},[22,4])
+},{}]},{},[24,4])
 //# sourceMappingURL=/dist/cd8a7dbfe00fa1bc3956ae5c9aabab45.map
