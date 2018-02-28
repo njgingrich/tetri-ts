@@ -142,9 +142,13 @@ class Tetris {
     this.handleNextEvent()
 
     if (this.paused) return
+    if (this.shouldStep) {
+      this.needNewPiece = this.board.movePieceDown()
+      this.shouldStep = false
+    }
 
     this.dt += ticks
-    if (this.dt > this.step || this.shouldStep) {
+    if (this.dt > this.step) {
       this.dt -= this.step
       this.needNewPiece = this.board.movePieceDown()
       this.shouldStep = false
@@ -297,6 +301,9 @@ class Tetris {
 
     this.running = true
     this.paused = false
+    this.shouldStep = false
+    this.needNewPiece = false
+    this.queuedActions = []
     this.lines = 0
     this.score = 0
     this.level = 0
@@ -305,6 +312,7 @@ class Tetris {
 
     this.board.reset()
     this.updateBackground()
+    this.lastTick = performance.now()
     requestAnimationFrame(this.loop.bind(this))
   }
 

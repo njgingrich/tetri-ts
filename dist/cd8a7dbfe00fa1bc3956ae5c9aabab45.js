@@ -728,8 +728,12 @@ var Tetris = /** @class */ (function () {
         this.handleNextEvent();
         if (this.paused)
             return;
+        if (this.shouldStep) {
+            this.needNewPiece = this.board.movePieceDown();
+            this.shouldStep = false;
+        }
         this.dt += ticks;
-        if (this.dt > this.step || this.shouldStep) {
+        if (this.dt > this.step) {
             this.dt -= this.step;
             this.needNewPiece = this.board.movePieceDown();
             this.shouldStep = false;
@@ -871,6 +875,9 @@ var Tetris = /** @class */ (function () {
             overlay.style.display = "none";
         this.running = true;
         this.paused = false;
+        this.shouldStep = false;
+        this.needNewPiece = false;
+        this.queuedActions = [];
         this.lines = 0;
         this.score = 0;
         this.level = 0;
@@ -878,6 +885,7 @@ var Tetris = /** @class */ (function () {
         this.nextPiece = piece_1.Piece.randomPiece(this.width, this.tileSize);
         this.board.reset();
         this.updateBackground();
+        this.lastTick = performance.now();
         requestAnimationFrame(this.loop.bind(this));
     };
     Tetris.prototype.switchAudioButton = function () {
