@@ -279,6 +279,12 @@ exports.Backgrounds = [
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var color_1 = require("./color");
+/**
+ * Add one or more classes to an HTMLElement.
+ *
+ * @param node The node to add a class to.
+ * @param classes The string of classes to add.
+ */
 function addClass(node, classes) {
     if (node.className) {
         node.className += " " + classes;
@@ -288,6 +294,14 @@ function addClass(node, classes) {
     }
 }
 exports.addClass = addClass;
+/**
+ * Draw a square on the canvas. Each piece is made up of several squares.
+ *
+ * @param x The x position on the canvas
+ * @param y The y position on the canvas
+ * @param ctx The drawing context of the canvas
+ * @param size The size of a board square, in px.
+ */
 function drawSquare(x, y, ctx, size) {
     ctx.fillRect(x * size, y * size, size, size);
     var ss = ctx.strokeStyle;
@@ -296,6 +310,12 @@ function drawSquare(x, y, ctx, size) {
     ctx.strokeStyle = ss;
 }
 exports.drawSquare = drawSquare;
+/**
+ * Remove the previous "next piece" so the new piece can be drawn.
+ *
+ * @param ctx The drawing context
+ * @param p The piece to clear
+ */
 function clearNextPiece(ctx, p) {
     for (var r = 0; r < 3; r++) {
         for (var c = 0; c < 4; c++) {
@@ -305,6 +325,12 @@ function clearNextPiece(ctx, p) {
     }
 }
 exports.clearNextPiece = clearNextPiece;
+/**
+ * Draw the next piece that is upcoming on the board grid.
+ *
+ * @param ctx The drawing context
+ * @param p The piece to draw
+ */
 function drawNextPiece(ctx, p) {
     var fillStyle = color_1.Colors[p.type];
     for (var r = 0; r < 3; r++) {
@@ -337,29 +363,62 @@ var Piece = /** @class */ (function () {
         this.row = -1; // y
         this.col = (this.boardWidth / 2) - Math.ceil(this.shape.length / 2); // x
     }
+    /**
+     * Draw the piece onto the canvas with the given context.
+     *
+     * @param ctx The drawing context
+     */
     Piece.prototype.draw = function (ctx) {
         this.fill(ctx, color_1.Colors[this.type]);
     };
+    /**
+     * Move a piece left and redraw it.
+     *
+     * @param ctx The drawing context
+     */
     Piece.prototype.left = function (ctx) {
         this.clear(ctx);
         this.col--;
         this.draw(ctx);
     };
+    /**
+     * Move a piece right and redraw it.
+     *
+     * @param ctx The drawing context
+     */
     Piece.prototype.right = function (ctx) {
         this.clear(ctx);
         this.col++;
         this.draw(ctx);
     };
+    /**
+     * Move a piece down and redraw it.
+     *
+     * @param ctx The drawing context
+     */
     Piece.prototype.down = function (ctx) {
         this.clear(ctx);
         this.row++;
         this.draw(ctx);
     };
+    /**
+     * Move a piece as far down as it can without colliding and redraw it.
+     *
+     * @param ctx The drawing context
+     * @param dy The number of rows to drop the piece
+     */
     Piece.prototype.hardDown = function (ctx, dy) {
         this.clear(ctx);
         this.row += dy - 1;
         this.draw(ctx);
     };
+    /**
+     * Rotate a piece, possibly nudging it (to allow kicking off the walls)
+     * and redraw it.
+     *
+     * @param ctx The drawing context
+     * @param nudge The amount to possibly move the piece left/right
+     */
     Piece.prototype.rotate = function (ctx, nudge) {
         this.clear(ctx);
         this.col += nudge;
@@ -395,13 +454,28 @@ var Piece = /** @class */ (function () {
         }
         return false;
     };
+    /**
+     * Get a random type of piece.
+     */
     Piece.getRandomType = function () {
         return Math.floor(Math.random() * 7) + 1;
     };
+    /**
+     * Create a new, random Piece instance.
+     *
+     * @param boardWidth The width of the board.
+     * @param size The size of a board square in px.
+     */
     Piece.randomPiece = function (boardWidth, size) {
         var newType = Piece.getRandomType();
         return new Piece(newType, boardWidth, size);
     };
+    /**
+     * Fill a piece with the given color.
+     *
+     * @param ctx The drawing context
+     * @param fillstyle The color to fill the piece with.
+     */
     Piece.prototype.fill = function (ctx, fillstyle) {
         for (var r = 0; r < this.shape.length; r++) {
             for (var c = 0; c < this.shape.length; c++) {
@@ -413,6 +487,11 @@ var Piece = /** @class */ (function () {
             }
         }
     };
+    /**
+     * Clear a piece from the board by drawing it as white.
+     *
+     * @param ctx The drawing context
+     */
     Piece.prototype.clear = function (ctx) {
         this.fill(ctx, "white");
     };
@@ -458,6 +537,9 @@ var Board = /** @class */ (function () {
         this.container.height = (this.height * this.tileSize);
         this.grid = this.initGrid();
     }
+    /**
+     * Draw the grid onto the canvas.
+     */
     Board.prototype.draw = function () {
         for (var r = 0; r < this.height; r++) {
             var row = this.grid[r];
@@ -469,6 +551,10 @@ var Board = /** @class */ (function () {
         }
         this.activePiece.draw(this.ctx);
     };
+    /**
+     * Remove filled lines from the board and shift the remaining lines down,
+     * refilling the top with empty lines.
+     */
     Board.prototype.clearLines = function () {
         var numLines = 0;
         for (var row = 0; row < this.height; row++) {
@@ -494,19 +580,19 @@ var Board = /** @class */ (function () {
     Board.prototype.handleEvent = function (event) {
         switch (event) {
             case event_1.GameEvent.MOVE_LEFT: {
-                if (!this.collides(this.activePiece, -1, 0, this.activePiece.shape)) {
+                if (!this.collides(-1, 0, this.activePiece.shape)) {
                     this.activePiece.left(this.ctx);
                 }
                 break;
             }
             case event_1.GameEvent.MOVE_RIGHT: {
-                if (!this.collides(this.activePiece, 1, 0, this.activePiece.shape)) {
+                if (!this.collides(1, 0, this.activePiece.shape)) {
                     this.activePiece.right(this.ctx);
                 }
                 break;
             }
             case event_1.GameEvent.MOVE_DOWN: {
-                if (this.collides(this.activePiece, 0, 1, this.activePiece.shape)) {
+                if (this.collides(0, 1, this.activePiece.shape)) {
                     return true;
                 }
                 this.activePiece.down(this.ctx);
@@ -514,7 +600,7 @@ var Board = /** @class */ (function () {
             }
             case event_1.GameEvent.HARD_DOWN: {
                 var dy = 1;
-                while (!this.collides(this.activePiece, 0, dy, this.activePiece.shape)) {
+                while (!this.collides(0, dy, this.activePiece.shape)) {
                     dy++;
                 }
                 this.activePiece.hardDown(this.ctx, dy);
@@ -524,10 +610,10 @@ var Board = /** @class */ (function () {
                 var nextRotationIx = (this.activePiece.rotation + 1) % 4;
                 var nextRotation = shape_1.Shapes[this.activePiece.type][nextRotationIx];
                 var nudge = 0;
-                if (this.collides(this.activePiece, 0, 0, nextRotation)) {
+                if (this.collides(0, 0, nextRotation)) {
                     nudge = this.activePiece.col > this.width / 2 ? -1 : 1;
                 }
-                if (this.collides(this.activePiece, nudge, 0, nextRotation)) {
+                if (this.collides(nudge, 0, nextRotation)) {
                     break;
                 }
                 this.activePiece.rotate(this.ctx, nudge);
@@ -539,10 +625,16 @@ var Board = /** @class */ (function () {
         }
         return false;
     };
+    /**
+     * Reset the board to its initial state, including a random new first piece.
+     */
     Board.prototype.reset = function () {
         this.grid = this.initGrid();
         this.activePiece = piece_1.Piece.randomPiece(this.width, this.tileSize);
     };
+    /**
+     * Initialize the grid with default values.
+     */
     Board.prototype.initGrid = function () {
         var rows = [];
         for (var r = 0; r < this.height; r++) {
@@ -554,27 +646,47 @@ var Board = /** @class */ (function () {
         }
         return rows;
     };
+    /**
+     * Shift a piece down - expose the behavior of the active piece.
+     */
     Board.prototype.movePieceDown = function () {
-        if (this.collides(this.activePiece, 0, 1, this.activePiece.shape)) {
+        if (this.collides(0, 1, this.activePiece.shape)) {
             return true;
         }
         this.activePiece.down(this.ctx);
         return false;
     };
+    /**
+     * Set the piece into the board.
+     */
     Board.prototype.lockPiece = function () {
         this.activePiece.set(this.setOnBoard.bind(this));
     };
+    /**
+     * Draw the piece, saving it into the board.
+     *
+     * @param row The row of the grid
+     * @param col The column of the grid
+     * @param type The type of piece to draw
+     */
     Board.prototype.setOnBoard = function (row, col, type) {
         this.grid[row][col] = type;
     };
-    Board.prototype.collides = function (piece, dx, dy, nextShape) {
+    /**
+     * Check collision between the board and the active piece.
+     *
+     * @param dx The movement left/right
+     * @param dy The movement down
+     * @param nextShape The shape a piece would have on its next rotation.
+     */
+    Board.prototype.collides = function (dx, dy, nextShape) {
         for (var r = 0; r < nextShape.length; r++) {
             for (var c = 0; c < nextShape.length; c++) {
                 var cell = nextShape[r][c];
                 if (cell === 0)
                     continue;
-                var x = piece.col + c + dx;
-                var y = piece.row + r + dy;
+                var x = this.activePiece.col + c + dx;
+                var y = this.activePiece.row + r + dy;
                 if (y >= this.height || x < 0 || x >= this.width) {
                     return true;
                 }

@@ -35,6 +35,9 @@ export class Board {
     this.grid = this.initGrid()
   }
 
+  /**
+   * Draw the grid onto the canvas.
+   */
   public draw() {
     for (let r = 0; r < this.height; r++) {
       let row = this.grid[r]
@@ -49,6 +52,10 @@ export class Board {
     this.activePiece.draw(this.ctx)
   }
 
+  /**
+   * Remove filled lines from the board and shift the remaining lines down,
+   * refilling the top with empty lines.
+   */
   public clearLines(): number {
     let numLines = 0
 
@@ -78,19 +85,19 @@ export class Board {
   public handleEvent(event: GameEvent): boolean {
     switch (event) {
       case GameEvent.MOVE_LEFT: {
-        if (!this.collides(this.activePiece, -1, 0, this.activePiece.shape)) {
+        if (!this.collides(-1, 0, this.activePiece.shape)) {
           this.activePiece.left(this.ctx)
         }
         break
       }
       case GameEvent.MOVE_RIGHT: {
-        if (!this.collides(this.activePiece, 1, 0, this.activePiece.shape)) {
+        if (!this.collides(1, 0, this.activePiece.shape)) {
           this.activePiece.right(this.ctx)
         }
         break
       }
       case GameEvent.MOVE_DOWN: {
-        if (this.collides(this.activePiece, 0, 1, this.activePiece.shape)) {
+        if (this.collides(0, 1, this.activePiece.shape)) {
           return true
         }
         this.activePiece.down(this.ctx)
@@ -98,7 +105,7 @@ export class Board {
       }
       case GameEvent.HARD_DOWN: {
         let dy = 1
-        while (!this.collides(this.activePiece, 0, dy, this.activePiece.shape)) {
+        while (!this.collides(0, dy, this.activePiece.shape)) {
           dy++
         }
         this.activePiece.hardDown(this.ctx, dy)
@@ -109,11 +116,11 @@ export class Board {
         const nextRotation = Shapes[this.activePiece.type][nextRotationIx]
         let nudge = 0
     
-        if (this.collides(this.activePiece, 0, 0, nextRotation)) {
+        if (this.collides(0, 0, nextRotation)) {
           nudge = this.activePiece.col > this.width / 2 ? -1 : 1
         }
     
-        if (this.collides(this.activePiece, nudge, 0, nextRotation)) {
+        if (this.collides(nudge, 0, nextRotation)) {
           break
         }
 
@@ -127,11 +134,17 @@ export class Board {
     return false
   }
 
+  /**
+   * Reset the board to its initial state, including a random new first piece.
+   */
   public reset() {
     this.grid = this.initGrid()
     this.activePiece = Piece.randomPiece(this.width, this.tileSize)
   }
 
+  /**
+   * Initialize the grid with default values.
+   */
   private initGrid(): BoardGrid {
     let rows = []
     for (let r = 0; r < this.height; r++) {
@@ -145,30 +158,50 @@ export class Board {
     return rows
   }
 
+  /**
+   * Shift a piece down - expose the behavior of the active piece.
+   */
   public movePieceDown(): boolean {
-    if (this.collides(this.activePiece, 0, 1, this.activePiece.shape)) {
+    if (this.collides(0, 1, this.activePiece.shape)) {
       return true
     }
     this.activePiece.down(this.ctx)
     return false
   }
 
+  /**
+   * Set the piece into the board.
+   */
   public lockPiece() {
     this.activePiece.set(this.setOnBoard.bind(this))
   }
 
+  /**
+   * Draw the piece, saving it into the board.
+   *
+   * @param row The row of the grid
+   * @param col The column of the grid
+   * @param type The type of piece to draw
+   */
   private setOnBoard(row: number, col: number, type: TetrominoType) {
     this.grid[row][col] = type
   }
   
-  private collides(piece: Piece, dx: number, dy: number, nextShape: Shape) {
+  /**
+   * Check collision between the board and the active piece.
+   *
+   * @param dx The movement left/right
+   * @param dy The movement down
+   * @param nextShape The shape a piece would have on its next rotation.
+   */
+  private collides(dx: number, dy: number, nextShape: Shape) {
     for (let r = 0; r < nextShape.length; r++) {
       for (let c = 0; c < nextShape.length; c++) {
         let cell = nextShape[r][c]
         if (cell === 0) continue
 
-        let x = piece.col + c + dx
-        let y = piece.row + r + dy
+        let x = this.activePiece.col + c + dx
+        let y = this.activePiece.row + r + dy
         if (y >= this.height || x < 0 || x >= this.width) {
           return true
         }

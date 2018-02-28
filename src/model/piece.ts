@@ -28,34 +28,67 @@ export class Piece {
     this.col = (this.boardWidth / 2) - Math.ceil(this.shape.length / 2); // x
   }
 
+  /**
+   * Draw the piece onto the canvas with the given context.
+   *
+   * @param ctx The drawing context
+   */
   public draw(ctx: CanvasRenderingContext2D) {
     this.fill(ctx, Colors[this.type])
   }
 
+  /**
+   * Move a piece left and redraw it.
+   *
+   * @param ctx The drawing context
+   */
   public left(ctx: CanvasRenderingContext2D) {
     this.clear(ctx)
     this.col--
     this.draw(ctx)
   }
 
+  /**
+   * Move a piece right and redraw it.
+   *
+   * @param ctx The drawing context
+   */
   public right(ctx: CanvasRenderingContext2D) {
     this.clear(ctx)
     this.col++
     this.draw(ctx)
   }
 
+  /**
+   * Move a piece down and redraw it.
+   *
+   * @param ctx The drawing context
+   */
   public down(ctx: CanvasRenderingContext2D) {
     this.clear(ctx)
     this.row++
     this.draw(ctx)
   }
 
+  /**
+   * Move a piece as far down as it can without colliding and redraw it.
+   *
+   * @param ctx The drawing context
+   * @param dy The number of rows to drop the piece
+   */
   public hardDown(ctx: CanvasRenderingContext2D, dy: number) {
     this.clear(ctx)
     this.row += dy - 1
     this.draw(ctx)
   }
 
+  /**
+   * Rotate a piece, possibly nudging it (to allow kicking off the walls)
+   * and redraw it.
+   *
+   * @param ctx The drawing context
+   * @param nudge The amount to possibly move the piece left/right
+   */
   public rotate(ctx: CanvasRenderingContext2D, nudge: number) {
     this.clear(ctx)
     this.col += nudge
@@ -91,10 +124,19 @@ export class Piece {
     return false
   }
 
-  public static getRandomType(): number {
+  /**
+   * Get a random type of piece.
+   */
+  public static getRandomType(): TetrominoType {
     return Math.floor(Math.random() * 7) + 1
   }
 
+  /**
+   * Create a new, random Piece instance.
+   *
+   * @param boardWidth The width of the board.
+   * @param size The size of a board square in px.
+   */
   public static randomPiece(boardWidth: number, size: number): Piece {
     const newType = Piece.getRandomType()
     return new Piece(
@@ -104,6 +146,12 @@ export class Piece {
     )
   }
   
+  /**
+   * Fill a piece with the given color.
+   *
+   * @param ctx The drawing context
+   * @param fillstyle The color to fill the piece with.
+   */
   private fill(ctx: CanvasRenderingContext2D, fillstyle: string) {
     for (let r = 0; r < this.shape.length; r++) {
       for (let c = 0; c < this.shape.length; c++) {
@@ -116,6 +164,11 @@ export class Piece {
     }
   }
   
+  /**
+   * Clear a piece from the board by drawing it as white.
+   *
+   * @param ctx The drawing context
+   */
   private clear(ctx: CanvasRenderingContext2D) {
     this.fill(ctx, "white")
   }
