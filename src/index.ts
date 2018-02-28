@@ -298,9 +298,8 @@ class Tetris {
   private reset() {
     const overlay = document.getElementById("overlay")
     if (overlay) overlay.style.display = "none"
-
+    this.unpauseGame()
     this.running = true
-    this.paused = false
     this.shouldStep = false
     this.needNewPiece = false
     this.queuedActions = []
