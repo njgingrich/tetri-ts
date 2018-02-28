@@ -630,6 +630,7 @@ var Tetris = /** @class */ (function () {
         this.nextPieceContainer.height = (3 * this.tileSize);
         this.running = true;
         this.paused = false;
+        this.shouldStep = false;
         this.audioPlaying = true;
         this.level = 0;
         this.lines = 0;
@@ -728,9 +729,10 @@ var Tetris = /** @class */ (function () {
         if (this.paused)
             return;
         this.dt += ticks;
-        if (this.dt > this.step) {
+        if (this.dt > this.step || this.shouldStep) {
             this.dt -= this.step;
             this.needNewPiece = this.board.movePieceDown();
+            this.shouldStep = false;
         }
         if (this.needNewPiece) {
             if (this.board.activePiece.isAtTop()) {
@@ -761,7 +763,10 @@ var Tetris = /** @class */ (function () {
             case event_1.GameEvent.MOVE_LEFT:
             case event_1.GameEvent.MOVE_RIGHT:
             case event_1.GameEvent.ROTATE: {
-                this.board.handleEvent(event);
+                if (this.board.handleEvent(event)) {
+                    this.shouldStep = true;
+                    return;
+                }
                 break;
             }
             case event_1.GameEvent.PAUSE: {
@@ -787,7 +792,6 @@ var Tetris = /** @class */ (function () {
                 break;
             }
             case event_1.GameEvent.GAME_OVER: {
-                this.running = false;
                 this.gameOver();
                 break;
             }
@@ -852,6 +856,8 @@ var Tetris = /** @class */ (function () {
      * End the game and show the overlay.
      */
     Tetris.prototype.gameOver = function () {
+        this.running = false;
+        this.paused = true;
         var overlay = document.getElementById("overlay");
         if (overlay)
             overlay.style.display = "block";

@@ -21,6 +21,7 @@ class Tetris {
   audioPlaying: boolean
   running: boolean
   paused: boolean
+  shouldStep: boolean
   level: number
   lines: number
   score: number
@@ -40,6 +41,7 @@ class Tetris {
     this.nextPieceContainer.height = (3 * this.tileSize)
     this.running = true
     this.paused = false
+    this.shouldStep = false
     this.audioPlaying = true
     this.level = 0
     this.lines = 0
@@ -142,9 +144,10 @@ class Tetris {
     if (this.paused) return
 
     this.dt += ticks
-    if (this.dt > this.step) {
+    if (this.dt > this.step || this.shouldStep) {
       this.dt -= this.step
       this.needNewPiece = this.board.movePieceDown()
+      this.shouldStep = false
     }
 
     if (this.needNewPiece) {
@@ -179,7 +182,10 @@ class Tetris {
       case GameEvent.MOVE_LEFT:
       case GameEvent.MOVE_RIGHT:
       case GameEvent.ROTATE: {
-        this.board.handleEvent(event)
+        if (this.board.handleEvent(event)) {
+          this.shouldStep = true
+          return
+        }
         break
       }
       case GameEvent.PAUSE: {
@@ -205,7 +211,6 @@ class Tetris {
         break
       }
       case GameEvent.GAME_OVER: {
-        this.running = false
         this.gameOver()
         break
       }
@@ -277,6 +282,8 @@ class Tetris {
    * End the game and show the overlay.
    */
   private gameOver() {
+    this.running = false
+    this.paused = true
     const overlay = document.getElementById("overlay")
     if (overlay) overlay.style.display = "block"
   }
