@@ -102,7 +102,7 @@ export class Board {
           dy++
         }
         this.activePiece.hardDown(this.ctx, dy)
-        break
+        return true
       }
       case GameEvent.ROTATE: {
         const nextRotationIx = (this.activePiece.rotation + 1) % 4

@@ -45,8 +45,15 @@
   text-decoration: underline;
 }
 
-.options {
+.extra {
   grid-area: options;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: white;
+}
+
+.options {
   display: flex;
   font-size: 20px;
   justify-content: space-around;
@@ -64,6 +71,7 @@
 
 .next-piece {
   grid-area: next;
+  background-color: white;
 }
 
 .box.next-piece {
@@ -73,6 +81,7 @@
 
 .scoring {
   grid-area: score;
+  background-color: white;
 }
 
 .row {
@@ -86,4 +95,15 @@
 .box {
   border: 12px solid #487eb0;
   padding: 8px;
+}
+
+.themes {
+  display: flex;
+  justify-content: space-around;
+}
+
+.theme {
+  width: 64px;
+  height: 64px;
+  border: 4px solid #487eb0;
 }

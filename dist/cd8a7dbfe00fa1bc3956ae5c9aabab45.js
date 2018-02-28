@@ -518,7 +518,7 @@ var Board = /** @class */ (function () {
                     dy++;
                 }
                 this.activePiece.hardDown(this.ctx, dy);
-                break;
+                return true;
             }
             case event_1.GameEvent.ROTATE: {
                 var nextRotationIx = (this.activePiece.rotation + 1) % 4;
@@ -628,6 +628,7 @@ var Tetris = /** @class */ (function () {
         this.nextPieceContainer = document.getElementById("nextpiece");
         this.nextPieceContainer.width = (4 * this.tileSize);
         this.nextPieceContainer.height = (3 * this.tileSize);
+        this.running = true;
         this.paused = false;
         this.audioPlaying = true;
         this.level = 0;
@@ -671,6 +672,8 @@ var Tetris = /** @class */ (function () {
                     break;
                 }
                 case keys_1.Keys.Q: {
+                    if (!_this.running)
+                        return;
                     if (_this.paused) {
                         _this.queuedActions.push(event_1.GameEvent.UNPAUSE);
                     }
@@ -693,6 +696,8 @@ var Tetris = /** @class */ (function () {
             _this.queuedActions.push(event_1.GameEvent.AUDIO_STOP);
         });
         pauseButton.addEventListener("click", function (e) {
+            if (!_this.running)
+                return;
             if (_this.paused) {
                 _this.queuedActions.push(event_1.GameEvent.PAUSE);
             }
@@ -782,6 +787,7 @@ var Tetris = /** @class */ (function () {
                 break;
             }
             case event_1.GameEvent.GAME_OVER: {
+                this.running = false;
                 this.gameOver();
                 break;
             }
@@ -857,6 +863,8 @@ var Tetris = /** @class */ (function () {
         var overlay = document.getElementById("overlay");
         if (overlay)
             overlay.style.display = "none";
+        this.running = true;
+        this.paused = false;
         this.lines = 0;
         this.score = 0;
         this.level = 0;
@@ -907,7 +915,7 @@ var container = document.getElementById("game");
 var game = new Tetris(container);
 game.start();
 
-},{"./model/board":7,"./model/piece":8,"./util/keys":9,"./util/color":10,"./model/event":11,"./util":14}],20:[function(require,module,exports) {
+},{"./model/board":7,"./model/piece":8,"./util/keys":9,"./util/color":10,"./model/event":11,"./util":14}],22:[function(require,module,exports) {
 
 var global = (1, eval)('this');
 var OldModule = module.bundle.Module;
@@ -1028,5 +1036,5 @@ function hmrAccept(bundle, id) {
     return hmrAccept(global.require, id);
   });
 }
-},{}]},{},[20,4])
+},{}]},{},[22,4])
 //# sourceMappingURL=/dist/cd8a7dbfe00fa1bc3956ae5c9aabab45.map

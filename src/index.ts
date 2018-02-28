@@ -19,6 +19,7 @@ class Tetris {
   needNewPiece: boolean
 
   audioPlaying: boolean
+  running: boolean
   paused: boolean
   level: number
   lines: number
@@ -37,6 +38,7 @@ class Tetris {
     this.nextPieceContainer = document.getElementById("nextpiece") as HTMLCanvasElement
     this.nextPieceContainer.width = (4 * this.tileSize)
     this.nextPieceContainer.height = (3 * this.tileSize)
+    this.running = true
     this.paused = false
     this.audioPlaying = true
     this.level = 0
@@ -82,6 +84,7 @@ class Tetris {
           break
         }
         case Keys.Q: {
+          if (!this.running) return
           if (this.paused) {
             this.queuedActions.push(GameEvent.UNPAUSE)
           } else {
@@ -105,6 +108,7 @@ class Tetris {
       this.queuedActions.push(GameEvent.AUDIO_STOP)
     })
     pauseButton.addEventListener("click", (e) => {
+      if (!this.running) return
       if (this.paused) {
         this.queuedActions.push(GameEvent.PAUSE)
       } else {
@@ -201,6 +205,7 @@ class Tetris {
         break
       }
       case GameEvent.GAME_OVER: {
+        this.running = false
         this.gameOver()
         break
       }
@@ -283,6 +288,8 @@ class Tetris {
     const overlay = document.getElementById("overlay")
     if (overlay) overlay.style.display = "none"
 
+    this.running = true
+    this.paused = false
     this.lines = 0
     this.score = 0
     this.level = 0
